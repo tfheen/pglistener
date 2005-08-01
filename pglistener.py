@@ -3,17 +3,11 @@ import sys, psycopg
 import select, time, os, signal, errno, stat
 
 class PgListener:
-  def __init__(self,DSN):
-    self.name=""
-    self.notifications=[]
-    self.query=""
-    self.format=""
-    self.format_code=""
-    self.destination=""
-    self.posthooks=[]
-    self.DSN=DSN
+  def __init__(self,options):
 
-    conn = psycopg.connect(DSN)
+    self.options=options
+
+    conn = psycopg.connect(self.options['dsn'])
     conn.autocommit(1)
 
     self.conn=conn
@@ -21,14 +15,14 @@ class PgListener:
 
 
   def log(self,msg):
-    print "%s: %s" % (self.name, msg)
+    print "%s: %s" % (self.options['name'], msg)
 
   def do_query(self):
-    self.cursor.execute(self.query)
+    self.cursor.execute(self.options['query'])
     return self.cursor.fetchall()
 
   def do_format(self,row):
-    return self.format % row
+    return self.options['format'] % row
 
   def do_write(self,result,target):
     f = open(target,"w+")
@@ -37,7 +31,7 @@ class PgListener:
     f.close
 
   def do_perms(self, target):
-    orig = os.stat(self.destination)
+    orig = os.stat(self.options['destination'])
     os.chmod(target, orig[stat.ST_MODE])
     try:
       os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
@@ -45,17 +39,17 @@ class PgListener:
       self.log("Failed to chmod new file: %s" % strerror)
 
   def do_update(self):
-    target = self.destination+"~"
+    target = self.options['destination']+"~"
     result = self.do_query()
 
     self.do_write(result, target)
     self.do_perms(target)
 
-    self.log("Updating: %s" % self.destination)
-    os.rename(target, self.destination)
+    self.log("Updating: %s" % self.options['destination'])
+    os.rename(target, self.options['destination'])
 
   def do_posthooks(self):
-    for hook in self.posthooks:
+    for hook in self.options['posthooks']:
       self.log("Executing: %s" % hook)
       os.system(hook)
 
@@ -69,13 +63,13 @@ class PgListener:
   def monitor (self):
     cursor = self.cursor
 
-    self.log("Starting monitor for %s" % self.destination)
+    self.log("Starting monitor for %s" % self.options['destination'])
 
     self.force_update = False
     def handle_usr1(signo, frame): self.force_update = True
     signal.signal(signal.SIGUSR1, handle_usr1)
 
-    for n in self.notifications:
+    for n in self.options['notifications']:
       self.log("Listening for: %s" % n)
       cursor.execute("listen %s" % n)
 
