@@ -4,9 +4,11 @@ import sys,os
 
 cf = SafeConfigParser()
 
-if (not os.path.exists(sys.argv[1])):
-  print "ERROR: File not found: %s" % sys.argv[1]
-cf.read(sys.argv[1])
+configfile=sys.argv[1]
+
+if (not os.path.exists(configfile)):
+  print "ERROR: File not found: %s" % configfile
+cf.read(configfile)
 
 for section in cf.sections():
  
