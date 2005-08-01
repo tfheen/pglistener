@@ -3,7 +3,7 @@ import sys, psycopg
 import select, time, os, signal, errno, stat
 
 class PgListener:
-  def __init__(self):
+  def __init__(self,DSN):
     self.name=""
     self.notifications=[]
     self.query=""
@@ -11,7 +11,14 @@ class PgListener:
     self.format_code=""
     self.destination=""
     self.posthooks=[]
-    self.cursor=""
+    self.DSN=DSN
+
+    conn = psycopg.connect(DSN)
+    conn.autocommit(1)
+
+    self.conn=conn
+    self.cursor=conn.cursor()
+
 
   def log(self,msg):
     print "%s: %s" % (self.name, msg)
@@ -61,6 +68,7 @@ class PgListener:
 
   def monitor (self):
     cursor = self.cursor
+
     self.log("Starting monitor for %s" % self.destination)
 
     self.force_update = False
