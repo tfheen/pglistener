@@ -27,7 +27,7 @@ class PgListener:
     includes the name of the configuration. The priority are those specified
     in the syslog module."""
     
-    if (options.has_key("syslog") and options['syslog'].lower()=='yes'):
+    if (self.options.has_key("syslog") and self.options['syslog'].lower()=='yes'):
       # Output to syslog if syslog support is enabled
       syslog(priority,"%s %s" %(name,msg))
       
