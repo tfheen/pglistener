@@ -57,12 +57,13 @@ class PgListener:
     """Apply the same file permissions from the original destination version of
     the file to the target."""
     
-    orig = os.stat(self.options['destination'])
-    os.chmod(target, orig[stat.ST_MODE])
-    try:
-      os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
-    except select.error, (errno, strerror):
-      self.log(LOG_ERR,"Failed to chmod new file: %s" % strerror)
+    if os.path.exists(self.options['destination']):
+      orig = os.stat(self.options['destination'])
+      try:
+        os.chmod(target, orig[stat.ST_MODE])
+        os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
+      except select.error, (errno, strerror):
+       self.log(LOG_ERR,"Failed to chmod new file: %s" % strerror)
 
   def do_update(self):
     """Update the destination file with data from the database."""
