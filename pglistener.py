@@ -20,7 +20,7 @@ class PgListener:
 
     if (options.has_key("syslog") and options['syslog'].lower()=='yes'):
       # Set the appropriate syslog settings if we are using syslog
-      openlog('syslog',LOG_PID,LOG_DAEMON)
+      openlog('pglistener',LOG_PID,LOG_DAEMON)
 
   def log(self,priority,msg):
     """Record appropriate logging information. The message that is logged
@@ -29,7 +29,7 @@ class PgListener:
     
     if (self.options.has_key("syslog") and self.options['syslog'].lower()=='yes'):
       # Output to syslog if syslog support is enabled
-      syslog(priority,"%s %s" %(name,msg))
+      syslog(priority,"%s: %s" %(self.options['name'],msg))
       
     print "%s: %s" % (self.options['name'], msg)
 
