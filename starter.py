@@ -2,12 +2,6 @@ from ConfigParser import SafeConfigParser
 
 import sys,os
 
-def pairs_to_dictionary(xs):
-  dict={}
-  for x in xs:
-    dict[x[0]]=x[1]
-
-  return dict
 
 cf = SafeConfigParser()
 
@@ -27,12 +21,11 @@ if section:
   if (not os.path.exists(classname.lower() + ".py")):
     print "ERROR: Module not found: %s" % classname
   exec("from %s import %s" % (classname.lower(),classname))
-  options=pairs_to_dictionary(cf.items(section))
+  options=dict(cf.items(section))
   print options
   options['notifications']=eval(options['notifications'])
   options['posthooks']=eval(options['posthooks'])
   options['name']=section
   listener = eval("%s(%s)" % (classname,options))
-  listener.monitor()
 
 

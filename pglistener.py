@@ -6,14 +6,17 @@ from syslog import *
 class PgListener:
 
   def connect(self):
-
-    conn = psycopg.connect(self.options['dsn'])
-
-    # We don't want to have to commit our transactions
-    conn.autocommit(1)
-
-    self.conn=conn
-    self.cursor=conn.cursor()
+    
+    try:
+      conn = psycopg.connect(self.options['dsn'])
+      # We don't want to have to commit our transactions
+      conn.autocommit(1)
+      self.conn=conn
+      self.cursor=conn.cursor()
+      self.monitor()
+    except DatabaseErrror e:
+      self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
+      self.connect()
     
   def __init__(self,options):
     """Creates object and make connection to server and setup a cursor for the
@@ -40,9 +43,13 @@ class PgListener:
 
   def do_query(self):
     """Execute the query supplied returning all the rows."""
-    
-    self.cursor.execute(self.options['query'])
-    return self.cursor.fetchall()
+    try:
+      self.cursor.execute(self.options['query'])
+      return self.cursor.fetchall()
+    except psycopg.DatabaseError e:
+      self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
+      self.connect()
+      self.do_query()
 
   def do_format(self,row):
     """Apply the format string against a row."""
@@ -93,11 +100,15 @@ class PgListener:
   def get_notifies (self):
     """Get any pending notifications."""
     
-    cursor = self.cursor
-
-    time.sleep(0.1)
-    cursor.execute("select 1")
-    return cursor.notifies()
+    try:
+      cursor = self.cursor
+      time.sleep(0.1)
+      cursor.execute("select 1")
+      return cursor.notifies()
+    except psycopg.DatabaseError e:
+      self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
+      self.connect()
+      self.get_notifies()
 
   def monitor (self):
     """Start the main monitor loop."""
