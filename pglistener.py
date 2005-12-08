@@ -14,7 +14,7 @@ class PgListener:
       self.conn=conn
       self.cursor=conn.cursor()
       self.monitor()
-    except DatabaseErrror e:
+    except DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
       self.connect()
     
@@ -46,7 +46,7 @@ class PgListener:
     try:
       self.cursor.execute(self.options['query'])
       return self.cursor.fetchall()
-    except psycopg.DatabaseError e:
+    except psycopg.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
       self.connect()
       self.do_query()
@@ -105,7 +105,7 @@ class PgListener:
       time.sleep(0.1)
       cursor.execute("select 1")
       return cursor.notifies()
-    except psycopg.DatabaseError e:
+    except psycopg.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
       self.connect()
       self.get_notifies()
