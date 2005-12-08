@@ -32,6 +32,12 @@ class PgListener:
     connection."""
     self.sleeptime=0
     self.options=options
+    
+    # Setup a handler for SIGUSR1 which will force and update when the signal
+    # is received.
+    def handle_usr1(signo, frame): self.force_update = True
+    signal.signal(signal.SIGUSR1, handle_usr1)
+
 
     self.connect()
 
@@ -129,11 +135,6 @@ class PgListener:
 
     self.force_update = False
     
-    # Setup a handler for SIGUSR1 which will force and update when the signal
-    # is received.
-    def handle_usr1(signo, frame): self.force_update = True
-    signal.signal(signal.SIGUSR1, handle_usr1)
-
     # Setup the appropriate notifications
     for n in self.options['notifications']:
       self.log(LOG_INFO,"Listening for: %s" % n)
