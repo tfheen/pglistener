@@ -21,7 +21,7 @@ class PgListener:
 
     self.options=options
 
-    connect()
+    self.connect()
 
     if (options.has_key("syslog") and options['syslog'].lower()=='yes'):
       # Set the appropriate syslog settings if we are using syslog
