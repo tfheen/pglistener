@@ -16,12 +16,21 @@ class PgListener:
       self.monitor()
     except psycopg.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
+
+      # Exponential backoff foo
+      if (self.sleeptime==0):
+        self.sleeptime=1
+      else:
+        time.sleep(self.sleeptime)
+        self.sleeptime=self.sleeptime*2
+      
       self.connect()
+      self.sleeptime=0
     
   def __init__(self,options):
     """Creates object and make connection to server and setup a cursor for the
     connection."""
-
+    self.sleeptime=0
     self.options=options
 
     self.connect()
