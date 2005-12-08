@@ -140,6 +140,7 @@ class PgListener:
       cursor.execute("listen %s" % n)
 
     self.do_update()
+
     notifications = []
     while 1:
       while notifications or self.force_update:
@@ -150,8 +151,11 @@ class PgListener:
           self.log(LOG_DEBUG,"Got: %s" % notifications)
         self.do_update()
         notifications = self.get_notifies();
-
+      
+      # We've run out of notifications so now we can safely do the posthooks
       self.do_posthooks()
+
+      # This blocks, the above is only executed when we do get a notification
 
       try:
         select.select([cursor],[],[])
