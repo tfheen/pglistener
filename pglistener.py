@@ -4,12 +4,9 @@ import select, time, os, signal, errno, stat
 from syslog import *
 
 class PgListener:
-  def __init__(self,options):
-    """Creates object and make connection to server and setup a cursor for the
-    connection."""
 
-    self.options=options
-    
+  def connect(self):
+
     conn = psycopg.connect(self.options['dsn'])
 
     # We don't want to have to commit our transactions
@@ -17,6 +14,14 @@ class PgListener:
 
     self.conn=conn
     self.cursor=conn.cursor()
+    
+  def __init__(self,options):
+    """Creates object and make connection to server and setup a cursor for the
+    connection."""
+
+    self.options=options
+
+    connect()
 
     if (options.has_key("syslog") and options['syslog'].lower()=='yes'):
       # Set the appropriate syslog settings if we are using syslog
