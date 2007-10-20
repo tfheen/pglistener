@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from ConfigParser import SafeConfigParser
 
 import sys,os
