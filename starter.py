@@ -2,6 +2,7 @@ from ConfigParser import SafeConfigParser
 
 import sys,os
 
+sys.path.append("src")
 
 cf = SafeConfigParser()
 

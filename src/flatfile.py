@@ -1,6 +1,6 @@
 from pglistener import PgListener
 
-class FlatFileListener(PgListener):
+class FlatFile(PgListener):
   def __init__(self,options):
     if(not options.has_key('delimeter')):
       options['delimeter']=' '

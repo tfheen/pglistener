@@ -5,7 +5,7 @@ from syslog import *
 
 import dbhash
 
-class SimpleDBMListener(PgListener):
+class SimpleDBM(PgListener):
   def do_write(self,result,target):
     
     db=dbhash.open(target,"n")
