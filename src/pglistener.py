@@ -138,7 +138,7 @@ class PgListener:
     # Setup the appropriate notifications
     for n in self.options['notifications']:
       self.log(LOG_INFO,"Listening for: %s" % n)
-      cursor.execute("listen %s" % n)
+      cursor.execute("listen \"%s\"" % n)
 
     self.do_update()
 
