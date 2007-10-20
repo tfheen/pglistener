@@ -32,7 +32,6 @@ for section in cf.sections():
   pid = os.fork()
 
   if pid == 0:
-    pid = os.fork()
-    if pid == 0:
-      listener = eval("%s(%s)" % (classname,options))
+    listener = eval("%s(%s)" % (classname,options))
+    break
 
