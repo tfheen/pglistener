@@ -71,7 +71,8 @@ cf = SafeConfigParser()
 configfile=sys.argv[1]
 
 if (not os.path.exists(configfile)):
-  os.exit("ERROR: File not found: %s" % configfile)
+  print "ERROR: File not found: %s" % configfile
+  sys.exit(1)
 
 cf.read(configfile)
 
