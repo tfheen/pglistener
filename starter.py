@@ -64,37 +64,43 @@ if 0:
   os.dup2(0, 1)
   os.dup2(0, 2)
 
-sys.path.append("src")
+def main(argv):
+  sys.path.append("src")
 
-cf = SafeConfigParser()
+  cf = SafeConfigParser()
 
-configfile=sys.argv[1]
+  configfile=sys.argv[1]
 
-if (not os.path.exists(configfile)):
-  print "ERROR: File not found: %s" % configfile
-  sys.exit(1)
+  if (not os.path.exists(configfile)):
+    print "ERROR: File not found: %s" % configfile
+    return 1
 
-cf.read(configfile)
+  cf.read(configfile)
 
-createDaemon()
+  createDaemon()
 
-for section in cf.sections():
+  for section in cf.sections():
 
-  print section
+    print section
 
-  # Import the appropriate class
-  # Module name = lower of class name
-  classname = cf.get(section,"class")
+    # Import the appropriate class
+    # Module name = lower of class name
+    classname = cf.get(section,"class")
 
-  exec("from %s import %s" % (classname.lower(),classname))
-  options=dict(cf.items(section))
-  print options
-  options['notifications']=eval(options['notifications'])
-  options['posthooks']=eval(options['posthooks'])
-  options['name']=section
+    exec("from %s import %s" % (classname.lower(),classname))
+    options=dict(cf.items(section))
+    print options
+    options['notifications']=eval(options['notifications'])
+    options['posthooks']=eval(options['posthooks'])
+    options['name']=section
 
-  pid = os.fork()
-  if pid == 0:
-    listener = eval("%s(%s)" % (classname,options))
-    break
+    pid = os.fork()
+    if pid == 0:
+      listener = eval("%s(%s)" % (classname,options))
+      break
+
+  return 0
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))
 
