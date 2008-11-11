@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import sys, psycopg
+import sys, psycopg2
 
 import select, time, os, signal, errno, stat
 from syslog import *
@@ -26,13 +26,13 @@ class PgListener:
   def connect(self):
     
     try:
-      conn = psycopg.connect(self.options['dsn'])
+      conn = psycopg2.connect(self.options['dsn'])
       # We don't want to have to commit our transactions
       conn.autocommit(1)
       self.conn=conn
       self.cursor=conn.cursor()
       self.monitor()
-    except psycopg.DatabaseError, e:
+    except psycopg2.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
 
       # Exponential backoff foo
@@ -79,7 +79,7 @@ class PgListener:
     try:
       self.cursor.execute(self.options['query'])
       return self.cursor.fetchall()
-    except psycopg.DatabaseError, e:
+    except psycopg2.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
       self.connect()
       self.do_query()
@@ -138,7 +138,7 @@ class PgListener:
       time.sleep(0.1)
       cursor.execute("select 1")
       return cursor.notifies()
-    except psycopg.DatabaseError, e:
+    except psycopg2.DatabaseError, e:
       self.log(LOG_ERR,"Exception: %s. Reconnecting and retrying." %str(e))
       self.connect()
       self.get_notifies()
