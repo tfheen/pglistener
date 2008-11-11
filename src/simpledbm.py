@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import sys, psycopg
+import sys
 from pglistener import PgListener
 import select, time, os, signal, errno, stat
 from syslog import *
