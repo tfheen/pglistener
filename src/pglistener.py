@@ -96,7 +96,7 @@ class PgListener:
     f = open(target,"w+")
     for row in result:
       f.write(self.do_format(row))
-    f.close
+    f.close()
 
   def do_perms(self, target):
     """Apply the same file permissions from the original destination version of
