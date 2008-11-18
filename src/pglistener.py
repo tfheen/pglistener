@@ -41,16 +41,16 @@ class PgListener:
       else:
         time.sleep(self.sleeptime)
         self.sleeptime=self.sleeptime*2
-      
+
       self.connect()
       self.sleeptime=0
-    
+
   def __init__(self,options):
     """Creates object and make connection to server and setup a cursor for the
     connection."""
     self.sleeptime=0
     self.options=options
-    
+
     # Setup a handler for SIGUSR1 which will force and update when the signal
     # is received.
     def handle_usr1(signo, frame): self.force_update = True
@@ -67,11 +67,11 @@ class PgListener:
     """Record appropriate logging information. The message that is logged
     includes the name of the configuration. The priority are those specified
     in the syslog module."""
-    
+
     if (self.options.has_key("syslog") and self.options['syslog'].lower()=='yes'):
       # Output to syslog if syslog support is enabled
       syslog(priority,"%s: %s" %(self.options['name'],msg))
-      
+
     print "%s: %s" % (self.options['name'], msg)
 
   def do_query(self):
@@ -91,7 +91,7 @@ class PgListener:
   def do_write(self,result,target):
     """For each row in the result set apply the format and write it out to the
     target file."""
-    
+
     f = open(target,"w+")
     for row in result:
       f.write(self.do_format(row))
@@ -100,7 +100,7 @@ class PgListener:
   def do_perms(self, target):
     """Apply the same file permissions from the original destination version of
     the file to the target."""
-    
+
     if os.path.exists(self.options['destination']):
       orig = os.stat(self.options['destination'])
       try:
@@ -111,7 +111,7 @@ class PgListener:
 
   def do_update(self):
     """Update the destination file with data from the database."""
-    
+
     target = self.options['destination']+"~"
     result = self.do_query()
 
@@ -124,14 +124,14 @@ class PgListener:
 
   def do_posthooks(self):
     """Execute all the provided hooks."""
-    
+
     for hook in self.options['posthooks']:
       self.log(LOG_INFO,"Executing: %s" % hook)
       os.system(hook)
 
   def get_notifies (self):
     """Get any pending notifications."""
-    
+
     try:
       cursor = self.cursor
       time.sleep(0.1)
@@ -144,14 +144,14 @@ class PgListener:
 
   def monitor (self):
     """Start the main monitor loop."""
-    
+
     # Save a bit of typing ;-)
     cursor = self.cursor
 
     self.log(LOG_NOTICE,"Starting monitor for %s" % self.options['destination'])
 
     self.force_update = False
-    
+
     # Setup the appropriate notifications
     for n in self.options['notifications']:
       self.log(LOG_INFO,"Listening for: %s" % n)
@@ -169,7 +169,7 @@ class PgListener:
           self.log(LOG_DEBUG,"Got: %s" % notifications)
         self.do_update()
         notifications = self.get_notifies();
-      
+
       # We've run out of notifications so now we can safely do the posthooks
       self.do_posthooks()
 
