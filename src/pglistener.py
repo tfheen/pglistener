@@ -86,8 +86,7 @@ class PgListener:
 
   def do_format(self,row):
     """Apply the format string against a row."""
-    
-    return self.options['format'] % row
+    return self.options['format'].replace('\\n', '\n') % row
 
   def do_write(self,result,target):
     """For each row in the result set apply the format and write it out to the
