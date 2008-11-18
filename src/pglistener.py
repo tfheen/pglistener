@@ -125,7 +125,7 @@ class PgListener:
     def do_posthooks(self):
         """Execute all the provided hooks."""
 
-        for hook in self.options['posthooks']:
+        for hook in self.options.get('posthooks', []):
             self.log(LOG_INFO,"Executing: %s" % hook)
             os.system(hook)
 
