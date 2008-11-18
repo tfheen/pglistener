@@ -80,23 +80,17 @@ def main(argv):
     createDaemon()
 
     for section in cf.sections():
+        classname = cf.get(section, 'class')
+        cls = getattr(__import__(classname.lower()), classname)
 
-        print section
-
-        # Import the appropriate class
-        # Module name = lower of class name
-        classname = cf.get(section, "class")
-
-        exec("from %s import %s" % (classname.lower(), classname))
-        options=dict(cf.items(section))
-        print options
-        options['notifications']=eval(options['notifications'])
-        options['posthooks']=eval(options['posthooks'])
-        options['name']=section
+        options = dict(cf.items(section))
+        options['name'] = section
+        options['notifications'] = eval(options['notifications'])
 
         pid = os.fork()
+
         if pid == 0:
-            listener = eval("%s(%s)" % (classname, options))
+            cls(options)
             break
 
     return 0
