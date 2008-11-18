@@ -27,8 +27,6 @@ class PgListener:
     
     try:
       conn = psycopg2.connect(self.options['dsn'])
-      # We don't want to have to commit our transactions
-      conn.autocommit(1)
       self.conn=conn
       self.cursor=conn.cursor()
       self.monitor()
