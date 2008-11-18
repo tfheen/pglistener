@@ -20,7 +20,8 @@
 
 from ConfigParser import SafeConfigParser
 
-import sys,os
+import os
+import sys
 
 def createDaemon():
     pid = os.fork()
@@ -42,7 +43,7 @@ def createDaemon():
 
 if 0:
     # find max number of FDs
-    if (os.sysconf_names.has_key("SC_OPEN_MAX")):
+    if 'SC_OPEN_MAX' in os.sysconf_names:
         maxfd = os.sysconf("SC_OPEN_MAX")
     else:
         maxfd = 1024
@@ -84,9 +85,9 @@ def main(argv):
 
         # Import the appropriate class
         # Module name = lower of class name
-        classname = cf.get(section,"class")
+        classname = cf.get(section, "class")
 
-        exec("from %s import %s" % (classname.lower(),classname))
+        exec("from %s import %s" % (classname.lower(), classname))
         options=dict(cf.items(section))
         print options
         options['notifications']=eval(options['notifications'])
@@ -95,7 +96,7 @@ def main(argv):
 
         pid = os.fork()
         if pid == 0:
-            listener = eval("%s(%s)" % (classname,options))
+            listener = eval("%s(%s)" % (classname, options))
             break
 
     return 0
