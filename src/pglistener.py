@@ -24,7 +24,9 @@ from syslog import *
 class PgListener:
 
   def connect(self):
-    
+    if getattr(self, 'conn', None):
+        self.conn.close()
+
     try:
       conn = psycopg2.connect(self.options['dsn'])
       self.conn=conn
