@@ -21,7 +21,6 @@
 from ConfigParser import SafeConfigParser
 
 import sys,os
-import thread
 
 def createDaemon():
     pid = os.fork()
