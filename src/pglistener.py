@@ -178,9 +178,7 @@ class PgListener:
             try:
                 select.select([cursor],[],[])
             except select.error, (err, strerror):
-                if err == errno.EINTR:
-                    pass
-                else:
+                if err != errno.EINTR:
                     raise
             else:
                 notifications = self.get_notifies()
