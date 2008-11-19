@@ -21,7 +21,6 @@ import os
 import select
 import signal
 import stat
-import sys
 import syslog
 import time
 
