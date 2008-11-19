@@ -18,7 +18,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from ConfigParser import SafeConfigParser
+from ConfigParser import RawConfigParser
 
 import os
 import sys
@@ -67,7 +67,7 @@ if 0:
 def main(argv):
     sys.path.append("src")
 
-    cf = SafeConfigParser()
+    cf = RawConfigParser()
 
     configfile=sys.argv[1]
 
