@@ -34,7 +34,7 @@ class PgListener:
             self.conn.close()
 
         try:
-            conn = psycopg2.connect(self.options['dsn'])
+            conn = psycopg2.connect(self.dsn)
             self.conn = conn
             self.cursor = conn.cursor()
             self.monitor()
@@ -56,6 +56,12 @@ class PgListener:
         the connection."""
         self.sleeptime = 0
         self.options = options
+        self.name = options['name']
+        self.dsn = options['dsn']
+        self.query = options['query']
+        self.notifications = options['notifications']
+        self.destination = options['destination']
+        self.syslog = options.get('syslog', 'no').lower() == 'yes'
 
         # Setup a handler for SIGUSR1 which will force and update when the
         # signal # is received.
@@ -65,7 +71,7 @@ class PgListener:
 
         signal.signal(signal.SIGUSR1, handle_usr1)
 
-        if 'syslog' in options and options['syslog'].lower() == 'yes':
+        if self.syslog:
             # Set the appropriate syslog settings if we are using syslog
             openlog('pglistener', LOG_PID, LOG_DAEMON)
 
@@ -74,17 +80,16 @@ class PgListener:
         includes the name of the configuration. The priority are those
         specified in the syslog module."""
 
-        if ('syslog' in self.options and
-                self.options['syslog'].lower() == 'yes'):
+        if self.syslog:
             # Output to syslog if syslog support is enabled
-            syslog(priority, "%s: %s" % (self.options['name'], msg))
+            syslog(priority, "%s: %s" % (self.name, msg))
 
-        print "%s: %s" % (self.options['name'], msg)
+        print "%s: %s" % (self.name, msg)
 
     def do_query(self):
         """Execute the query supplied returning all the rows."""
         try:
-            self.cursor.execute(self.options['query'])
+            self.cursor.execute(self.query)
             return self.cursor.fetchall()
         except psycopg2.DatabaseError, e:
             self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
@@ -110,8 +115,8 @@ class PgListener:
         """Apply the same file permissions from the original destination
         version of the file to the target."""
 
-        if os.path.exists(self.options['destination']):
-            orig = os.stat(self.options['destination'])
+        if os.path.exists(self.destination):
+            orig = os.stat(self.destination)
             try:
                 os.chmod(target, orig[stat.ST_MODE])
                 os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
@@ -121,15 +126,15 @@ class PgListener:
     def do_update(self):
         """Update the destination file with data from the database."""
 
-        target = self.options['destination'] + "~"
+        target = self.destination + "~"
         result = self.do_query()
 
         self.do_write(result, target)
         self.do_perms(target)
 
-        self.log(LOG_NOTICE, "Updating: %s" % self.options['destination'])
+        self.log(LOG_NOTICE, "Updating: %s" % self.destination)
 
-        os.rename(target, self.options['destination'])
+        os.rename(target, self.destination)
 
     def do_posthooks(self):
         """Execute all the provided hooks."""
@@ -158,12 +163,12 @@ class PgListener:
         cursor = self.cursor
 
         self.log(LOG_NOTICE,
-            "Starting monitor for %s" % self.options['destination'])
+            "Starting monitor for %s" % self.destination)
 
         self.force_update = False
 
         # Setup the appropriate notifications
-        for n in self.options['notifications']:
+        for n in self.notifications:
             self.log(LOG_INFO, "Listening for: %s" % n)
             cursor.execute("listen \"%s\"" % n)
 
