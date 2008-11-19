@@ -79,7 +79,7 @@ def read_config(path):
         yield cls(options)
 
 def main(argv):
-    sys.path.append("src")
+    sys.path.append("pglistener")
     configfile = argv[1]
 
     if (not os.path.exists(configfile)):
