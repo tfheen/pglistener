@@ -39,14 +39,6 @@ class PgListener:
         self.destination = options['destination']
         self.syslog = options.get('syslog', 'no').lower() == 'yes'
 
-        # Setup a handler for SIGUSR1 which will force and update when the
-        # signal # is received.
-
-        def handle_usr1(signo, frame):
-            self.force_update = True
-
-        signal.signal(signal.SIGUSR1, handle_usr1)
-
         if self.syslog:
             # Set the appropriate syslog settings if we are using syslog
             syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
@@ -157,6 +149,15 @@ class PgListener:
             self.connect()
             self.get_notifies()
 
+    def setup_usr1(self):
+        # Setup a handler for SIGUSR1 which will force and update when the
+        # signal # is received.
+
+        def handle_usr1(signo, frame):
+            self.force_update = True
+
+        signal.signal(signal.SIGUSR1, handle_usr1)
+
     def monitor(self):
         """Start the main monitor loop."""
 
@@ -167,6 +168,7 @@ class PgListener:
             "Starting monitor for %s" % self.destination)
 
         self.force_update = False
+        self.setup_usr1()
 
         # Setup the appropriate notifications
         for n in self.notifications:
