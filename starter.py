@@ -80,8 +80,7 @@ def read_config(path):
 
 def main(argv):
     sys.path.append("src")
-
-    configfile = sys.argv[1]
+    configfile = argv[1]
 
     if (not os.path.exists(configfile)):
         print "ERROR: File not found: %s" % configfile
