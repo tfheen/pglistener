@@ -18,10 +18,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from ConfigParser import RawConfigParser
-
 import os
 import sys
+
+from pglistener import config
 
 def createDaemon():
     pid = os.fork()
@@ -64,22 +64,6 @@ if 0:
     os.dup2(0, 1)
     os.dup2(0, 2)
 
-def read_config(path):
-    cf = RawConfigParser()
-    cf.read(path)
-
-    for section in cf.sections():
-        classname = cf.get(section, 'class')
-        modname = 'pglistener.%s' % classname.lower()
-        __import__(modname)
-        cls = getattr(sys.modules[modname], classname)
-
-        options = dict(cf.items(section))
-        options['name'] = section
-        options['notifications'] = eval(options['notifications'])
-
-        yield cls(options)
-
 def main(argv):
     configfile = argv[1]
 
@@ -87,7 +71,7 @@ def main(argv):
         print "ERROR: File not found: %s" % configfile
         return 1
 
-    listeners = list(read_config(configfile))
+    listeners = list(config.read_config(configfile))
     createDaemon()
 
     for listener in listeners:
