@@ -87,9 +87,10 @@ def main(argv):
         print "ERROR: File not found: %s" % configfile
         return 1
 
+    config = list(read_config(configfile))
     createDaemon()
 
-    for cls, options in read_config(configfile):
+    for cls, options in config:
         pid = os.fork()
 
         if pid == 0:
