@@ -76,7 +76,7 @@ def read_config(path):
         options['name'] = section
         options['notifications'] = eval(options['notifications'])
 
-        yield (cls, options)
+        yield cls(options)
 
 def main(argv):
     sys.path.append("src")
@@ -87,14 +87,13 @@ def main(argv):
         print "ERROR: File not found: %s" % configfile
         return 1
 
-    config = list(read_config(configfile))
+    listeners = list(read_config(configfile))
     createDaemon()
 
-    for cls, options in config:
+    for listener in listeners:
         pid = os.fork()
 
         if pid == 0:
-            listener = cls(options)
             listener.connect()
             break
 
