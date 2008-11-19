@@ -93,8 +93,11 @@ class PgListener:
 
     def write_file(self, path, f):
         fh = open(path, "w+")
-        f(fh)
-        fh.close()
+
+        try:
+            f(fh)
+        finally:
+            fh.close()
 
     def do_write(self, result, target):
         """For each row in the result set apply the format and write it out to
