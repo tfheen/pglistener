@@ -22,9 +22,8 @@ import select
 import signal
 import stat
 import sys
+import syslog
 import time
-
-from syslog import *
 
 import psycopg2
 
@@ -51,7 +50,7 @@ class PgListener:
 
         if self.syslog:
             # Set the appropriate syslog settings if we are using syslog
-            openlog('pglistener', LOG_PID, LOG_DAEMON)
+            syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
 
     def connect(self):
         if getattr(self, 'conn', None):
@@ -62,7 +61,8 @@ class PgListener:
             self.conn = conn
             self.cursor = conn.cursor()
         except psycopg2.DatabaseError, e:
-            self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
+            self.log(syslog.LOG_ERR,
+                "Exception: %s. Reconnecting and retrying." % e)
 
             # Exponential backoff foo
             if self.sleeptime == 0:
@@ -81,7 +81,7 @@ class PgListener:
 
         if self.syslog:
             # Output to syslog if syslog support is enabled
-            syslog(priority, "%s: %s" % (self.name, msg))
+            syslog.syslog(priority, "%s: %s" % (self.name, msg))
 
         print "%s: %s" % (self.name, msg)
 
@@ -91,7 +91,8 @@ class PgListener:
             self.cursor.execute(self.query)
             return self.cursor.fetchall()
         except psycopg2.DatabaseError, e:
-            self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
+            self.log(syslog.LOG_ERR,
+                "Exception: %s. Reconnecting and retrying." % e)
             self.connect()
             self.do_query()
 
@@ -120,7 +121,8 @@ class PgListener:
                 os.chmod(target, orig[stat.ST_MODE])
                 os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
             except select.error, (errno, strerror):
-                self.log(LOG_ERR, "Failed to chmod new file: %s" % strerror)
+                self.log(syslog.LOG_ERR,
+                    "Failed to chmod new file: %s" % strerror)
 
     def do_update(self):
         """Update the destination file with data from the database."""
@@ -131,7 +133,7 @@ class PgListener:
         self.do_write(result, target)
         self.do_perms(target)
 
-        self.log(LOG_NOTICE, "Updating: %s" % self.destination)
+        self.log(syslog.LOG_NOTICE, "Updating: %s" % self.destination)
 
         os.rename(target, self.destination)
 
@@ -139,7 +141,7 @@ class PgListener:
         """Execute all the provided hooks."""
 
         for hook in self.options.get('posthooks', []):
-            self.log(LOG_INFO, "Executing: %s" % hook)
+            self.log(syslog.LOG_INFO, "Executing: %s" % hook)
             os.system(hook)
 
     def get_notifies(self):
@@ -151,7 +153,8 @@ class PgListener:
             cursor.execute("select 1")
             return cursor.notifies()
         except psycopg2.DatabaseError, e:
-            self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
+            self.log(syslog.LOG_ERR,
+                "Exception: %s. Reconnecting and retrying." % e)
             self.connect()
             self.get_notifies()
 
@@ -161,14 +164,14 @@ class PgListener:
         # Save a bit of typing ;-)
         cursor = self.cursor
 
-        self.log(LOG_NOTICE,
+        self.log(syslog.LOG_NOTICE,
             "Starting monitor for %s" % self.destination)
 
         self.force_update = False
 
         # Setup the appropriate notifications
         for n in self.notifications:
-            self.log(LOG_INFO, "Listening for: %s" % n)
+            self.log(syslog.LOG_INFO, "Listening for: %s" % n)
             cursor.execute("listen \"%s\"" % n)
 
         self.do_update()
@@ -177,10 +180,10 @@ class PgListener:
         while True:
             while notifications or self.force_update:
                 if self.force_update:
-                    self.log(LOG_NOTICE, "Got SIGUSR1, forcing update.")
+                    self.log(syslog.LOG_NOTICE, "Got SIGUSR1, forcing update.")
                     self.force_update = False
                 else:
-                    self.log(LOG_DEBUG, "Got: %s" % notifications)
+                    self.log(syslog.LOG_DEBUG, "Got: %s" % notifications)
 
                 self.do_update()
                 notifications = self.get_notifies()
