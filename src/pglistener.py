@@ -29,27 +29,6 @@ from syslog import *
 import psycopg2
 
 class PgListener:
-    def connect(self):
-        if getattr(self, 'conn', None):
-            self.conn.close()
-
-        try:
-            conn = psycopg2.connect(self.dsn)
-            self.conn = conn
-            self.cursor = conn.cursor()
-        except psycopg2.DatabaseError, e:
-            self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
-
-            # Exponential backoff foo
-            if self.sleeptime == 0:
-                self.sleeptime = 1
-            else:
-                time.sleep(self.sleeptime)
-                self.sleeptime = self.sleeptime * 2
-
-            self.connect()
-            self.sleeptime = 0
-
     def __init__(self, options):
         """Creates object and make connection to server and setup a cursor for
         the connection."""
@@ -73,6 +52,27 @@ class PgListener:
         if self.syslog:
             # Set the appropriate syslog settings if we are using syslog
             openlog('pglistener', LOG_PID, LOG_DAEMON)
+
+    def connect(self):
+        if getattr(self, 'conn', None):
+            self.conn.close()
+
+        try:
+            conn = psycopg2.connect(self.dsn)
+            self.conn = conn
+            self.cursor = conn.cursor()
+        except psycopg2.DatabaseError, e:
+            self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
+
+            # Exponential backoff foo
+            if self.sleeptime == 0:
+                self.sleeptime = 1
+            else:
+                time.sleep(self.sleeptime)
+                self.sleeptime = self.sleeptime * 2
+
+            self.connect()
+            self.sleeptime = 0
 
     def log(self, priority, msg):
         """Record appropriate logging information. The message that is logged
