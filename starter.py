@@ -70,7 +70,9 @@ def read_config(path):
 
     for section in cf.sections():
         classname = cf.get(section, 'class')
-        cls = getattr(__import__(classname.lower()), classname)
+        modname = 'pglistener.%s' % classname.lower()
+        __import__(modname)
+        cls = getattr(sys.modules[modname], classname)
 
         options = dict(cf.items(section))
         options['name'] = section
@@ -79,7 +81,6 @@ def read_config(path):
         yield cls(options)
 
 def main(argv):
-    sys.path.append("pglistener")
     configfile = argv[1]
 
     if (not os.path.exists(configfile)):
