@@ -37,7 +37,6 @@ class PgListener:
             conn = psycopg2.connect(self.dsn)
             self.conn = conn
             self.cursor = conn.cursor()
-            self.monitor()
         except psycopg2.DatabaseError, e:
             self.log(LOG_ERR, "Exception: %s. Reconnecting and retrying." % e)
 

@@ -95,6 +95,7 @@ def main(argv):
 
         if pid == 0:
             listener.connect()
+            listener.monitor()
             break
 
     return 0
