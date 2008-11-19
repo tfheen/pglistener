@@ -91,16 +91,20 @@ class PgListener:
         """Apply the format string against a row."""
         return self.options['format'].replace('\\n', '\n') % row
 
+    def write_file(self, path, f):
+        fh = open(path, "w+")
+        f(fh)
+        fh.close()
+
     def do_write(self, result, target):
         """For each row in the result set apply the format and write it out to
         the target file."""
 
-        f = open(target, "w+")
+        def write_results(fh):
+            for row in result:
+                fh.write(self.do_format(row))
 
-        for row in result:
-            f.write(self.do_format(row))
-
-        f.close()
+        self.write_file(target, write_results)
 
     def do_perms(self, source, target):
         """Apply the same file permissions from the original destination
