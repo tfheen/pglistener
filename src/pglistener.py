@@ -102,12 +102,13 @@ class PgListener:
 
         f.close()
 
-    def do_perms(self, target):
+    def do_perms(self, source, target):
         """Apply the same file permissions from the original destination
         version of the file to the target."""
 
-        if os.path.exists(self.destination):
-            orig = os.stat(self.destination)
+        if os.path.exists(source):
+            orig = os.stat(source)
+
             try:
                 os.chmod(target, orig[stat.ST_MODE])
                 os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
@@ -122,7 +123,7 @@ class PgListener:
         result = self.do_query()
 
         self.do_write(result, target)
-        self.do_perms(target)
+        self.do_perms(self.destination, target)
 
         self.log(syslog.LOG_NOTICE, "Updating: %s" % self.destination)
 
