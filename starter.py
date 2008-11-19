@@ -64,20 +64,9 @@ if 0:
     os.dup2(0, 1)
     os.dup2(0, 2)
 
-def main(argv):
-    sys.path.append("src")
-
+def read_config(path):
     cf = RawConfigParser()
-
-    configfile=sys.argv[1]
-
-    if (not os.path.exists(configfile)):
-        print "ERROR: File not found: %s" % configfile
-        return 1
-
-    cf.read(configfile)
-
-    createDaemon()
+    cf.read(path)
 
     for section in cf.sections():
         classname = cf.get(section, 'class')
@@ -87,6 +76,20 @@ def main(argv):
         options['name'] = section
         options['notifications'] = eval(options['notifications'])
 
+        yield (cls, options)
+
+def main(argv):
+    sys.path.append("src")
+
+    configfile = sys.argv[1]
+
+    if (not os.path.exists(configfile)):
+        print "ERROR: File not found: %s" % configfile
+        return 1
+
+    createDaemon()
+
+    for cls, options in read_config(configfile):
         pid = os.fork()
 
         if pid == 0:
