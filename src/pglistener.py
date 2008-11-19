@@ -92,12 +92,16 @@ class PgListener:
         return self.options['format'].replace('\\n', '\n') % row
 
     def write_file(self, path, f):
-        fh = open(path, "w+")
+        tmp = path + "~"
+        fh = open(tmp, "w+")
 
         try:
             f(fh)
         finally:
             fh.close()
+
+        self.do_perms(path, tmp)
+        os.rename(tmp, path)
 
     def do_write(self, result, target):
         """For each row in the result set apply the format and write it out to
@@ -126,15 +130,9 @@ class PgListener:
     def do_update(self):
         """Update the destination file with data from the database."""
 
-        target = self.destination + "~"
         result = self.do_query()
-
-        self.do_write(result, target)
-        self.do_perms(self.destination, target)
-
         self.log(syslog.LOG_NOTICE, "Updating: %s" % self.destination)
-
-        os.rename(target, self.destination)
+        self.do_write(result, self.destination)
 
     def do_posthooks(self):
         """Execute all the provided hooks."""
