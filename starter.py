@@ -94,7 +94,8 @@ def main(argv):
         pid = os.fork()
 
         if pid == 0:
-            cls(options)
+            listener = cls(options)
+            listener.connect()
             break
 
     return 0

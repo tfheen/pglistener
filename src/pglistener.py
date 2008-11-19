@@ -65,8 +65,6 @@ class PgListener:
 
         signal.signal(signal.SIGUSR1, handle_usr1)
 
-        self.connect()
-
         if 'syslog' in options and options['syslog'].lower() == 'yes':
             # Set the appropriate syslog settings if we are using syslog
             openlog('pglistener', LOG_PID, LOG_DAEMON)
