@@ -72,6 +72,10 @@ def main(argv):
         return 1
 
     listeners = list(config.read_config(configfile))
+
+    for listener in listeners:
+        listener.try_connect()
+
     createDaemon()
 
     for listener in listeners:
