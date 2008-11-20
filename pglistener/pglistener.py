@@ -38,13 +38,14 @@ class PgListener:
         self.notifications = options['notifications']
         self.destination = options['destination']
         self.syslog = options.get('syslog', 'no').lower() == 'yes'
+        self.conn = None
 
         if self.syslog:
             # Set the appropriate syslog settings if we are using syslog
             syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
 
     def connect(self):
-        if getattr(self, 'conn', None):
+        if self.conn:
             self.conn.close()
 
         try:
