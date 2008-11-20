@@ -44,14 +44,16 @@ class PgListener:
             # Set the appropriate syslog settings if we are using syslog
             syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
 
-    def connect(self):
+    def try_connect(self):
         if self.conn:
             self.conn.close()
 
+        self.conn = psycopg2.connect(self.dsn)
+        self.cursor = self.conn.cursor()
+
+    def connect(self):
         try:
-            conn = psycopg2.connect(self.dsn)
-            self.conn = conn
-            self.cursor = conn.cursor()
+            self.try_connect()
         except psycopg2.DatabaseError, e:
             self.log(syslog.LOG_ERR,
                 "Exception: %s. Reconnecting and retrying." % e)
