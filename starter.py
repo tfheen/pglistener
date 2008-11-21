@@ -26,43 +26,23 @@ from pglistener import config
 def createDaemon():
     pid = os.fork()
 
-    # exit parent
     if pid != 0:
         os._exit(0)
 
-    # become session leader
     os.setsid()
-
     pid = os.fork()
 
-    # exit first child
     if pid != 0:
         os._exit(0)
 
-    return
+    fh = file(os.devnull, 'r')
+    os.dup2(fh.fileno(), 0)
+    fh.close()
 
-if 0:
-    # find max number of FDs
-    if 'SC_OPEN_MAX' in os.sysconf_names:
-        maxfd = os.sysconf("SC_OPEN_MAX")
-    else:
-        maxfd = 1024
-
-    # close all FDs
-    for fd in range(0, maxfd):
-        try:
-            os.close(fd)
-        except OSError:
-            pass
-
-    if (hasattr(os, "devnull")):
-        redirect_to = os.devnull
-    else:
-        redirect_to = "/dev/null"
-
-    os.open(redirect_do, os.O_RDWR)
-    os.dup2(0, 1)
-    os.dup2(0, 2)
+    fh = file(os.devnull, 'w')
+    os.dup2(fh.fileno(), 1)
+    os.dup2(fh.fileno(), 2)
+    fh.close()
 
 def main(argv):
     configfile = argv[1]
