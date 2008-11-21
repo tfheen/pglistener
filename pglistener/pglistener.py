@@ -167,6 +167,13 @@ class PgListener:
 
         signal.signal(signal.SIGUSR1, handle_usr1)
 
+    def listen(self):
+        # Set up the appropriate notifications
+
+        for n in self.notifications:
+            self.log(syslog.LOG_INFO, "Listening for: %s" % n)
+            self.cursor.execute("listen \"%s\"" % n)
+
     def monitor(self):
         """Start the main monitor loop."""
 
@@ -178,12 +185,7 @@ class PgListener:
 
         self.force_update = False
         self.setup_usr1()
-
-        # Setup the appropriate notifications
-        for n in self.notifications:
-            self.log(syslog.LOG_INFO, "Listening for: %s" % n)
-            cursor.execute("listen \"%s\"" % n)
-
+        self.listen()
         self.do_update()
         notifications = []
 
