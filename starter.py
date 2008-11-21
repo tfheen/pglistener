@@ -25,11 +25,6 @@ from pglistener import config, daemon
 
 def main(argv):
     configfile = argv[1]
-
-    if (not os.path.exists(configfile)):
-        print "ERROR: File not found: %s" % configfile
-        return 1
-
     listeners = list(config.read_config(configfile))
 
     for listener in listeners:
