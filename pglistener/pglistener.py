@@ -149,10 +149,12 @@ class PgListener:
         """Get any pending notifications."""
 
         try:
-            cursor = self.cursor
-            time.sleep(0.1)
-            cursor.execute("select 1")
-            return cursor.notifies()
+            if not self.cursor.isready():
+                return []
+
+            notifies = self.conn.notifies[:]
+            self.conn.notifies[:] = []
+            return [name for pid, name in notifies]
         except psycopg2.DatabaseError, e:
             self.log(syslog.LOG_ERR,
                 "Exception: %s. Reconnecting and retrying." % e)
