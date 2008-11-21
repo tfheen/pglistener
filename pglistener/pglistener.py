@@ -49,6 +49,7 @@ class PgListener:
             self.conn.close()
 
         self.conn = psycopg2.connect(self.dsn)
+        self.conn.set_isolation_level(0)
         self.cursor = self.conn.cursor()
 
     def connect(self):
