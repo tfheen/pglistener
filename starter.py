@@ -21,28 +21,7 @@
 import os
 import sys
 
-from pglistener import config
-
-def createDaemon():
-    pid = os.fork()
-
-    if pid != 0:
-        os._exit(0)
-
-    os.setsid()
-    pid = os.fork()
-
-    if pid != 0:
-        os._exit(0)
-
-    fh = file(os.devnull, 'r')
-    os.dup2(fh.fileno(), 0)
-    fh.close()
-
-    fh = file(os.devnull, 'w')
-    os.dup2(fh.fileno(), 1)
-    os.dup2(fh.fileno(), 2)
-    fh.close()
+from pglistener import config, daemon
 
 def main(argv):
     configfile = argv[1]
@@ -56,7 +35,7 @@ def main(argv):
     for listener in listeners:
         listener.try_connect()
 
-    createDaemon()
+    daemon.daemonize()
 
     for listener in listeners:
         pid = os.fork()
