@@ -29,17 +29,11 @@ def main(argv):
 
     for listener in listeners:
         listener.try_connect()
+        listener.listen()
+        listener.do_update()
 
     daemon.daemonize()
-
-    for listener in listeners:
-        pid = os.fork()
-
-        if pid == 0:
-            listener.connect()
-            listener.monitor()
-            break
-
+    daemon.loop(listeners)
     return 0
 
 if __name__ == '__main__':
