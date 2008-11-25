@@ -15,7 +15,8 @@ def read_config(path):
 
         options = dict(cf.items(section))
         options['name'] = section
-        options['notifications'] = eval(options['notifications'])
+        options['notifications'] = [
+            n.strip() for n in options['notifications'].split(',')]
 
         yield cls(options)
 
