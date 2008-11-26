@@ -16,12 +16,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import sys
-from pglistener import PgListener
-import select, time, os, signal, errno, stat
-from syslog import *
-
 import dbhash
+
+from pglistener import PgListener
 
 class SimpleDBM(PgListener):
   def do_write(self,result,target):
