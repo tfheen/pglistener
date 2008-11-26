@@ -3,6 +3,16 @@ import errno
 import os
 import select
 
+def close_stdio():
+    fh = file(os.devnull, 'r')
+    os.dup2(fh.fileno(), 0)
+    fh.close()
+
+    fh = file(os.devnull, 'w')
+    os.dup2(fh.fileno(), 1)
+    os.dup2(fh.fileno(), 2)
+    fh.close()
+
 def daemonize():
     pid = os.fork()
 
@@ -15,14 +25,7 @@ def daemonize():
     if pid != 0:
         os._exit(0)
 
-    fh = file(os.devnull, 'r')
-    os.dup2(fh.fileno(), 0)
-    fh.close()
-
-    fh = file(os.devnull, 'w')
-    os.dup2(fh.fileno(), 1)
-    os.dup2(fh.fileno(), 2)
-    fh.close()
+    close_stdio()
 
 def do_iteration(cursors):
     try:
