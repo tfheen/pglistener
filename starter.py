@@ -29,6 +29,7 @@ pidfile = '/var/run/pglistener.pid'
 def main(argv):
     configfile = argv[1]
     listeners = list(config.read_config(configfile))
+    daemon.daemonize(username, pidfile)
 
     for listener in listeners:
         listener.try_connect()
@@ -38,7 +39,6 @@ def main(argv):
     for listener in listeners:
         listener.listen()
 
-    daemon.daemonize(username, pidfile)
     daemon.loop(listeners)
     return 0
 
