@@ -29,9 +29,11 @@ def main(argv):
 
     for listener in listeners:
         listener.try_connect()
-        listener.listen()
         listener.do_update()
         listener.do_posthooks()
+
+    for listener in listeners:
+        listener.listen()
 
     daemon.daemonize()
     daemon.loop(listeners)
