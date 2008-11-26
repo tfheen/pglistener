@@ -1,7 +1,12 @@
 
 import errno
 import os
+import pwd
 import select
+
+def setuid(username):
+    uid = pwd.getpwnam(username).pw_uid
+    os.setuid(uid)
 
 def close_stdio():
     fh = file(os.devnull, 'r')
@@ -13,7 +18,12 @@ def close_stdio():
     os.dup2(fh.fileno(), 2)
     fh.close()
 
-def daemonize():
+def daemonize(username, pidfile):
+    # Open the PID file before we drop privileges, but write it after we're
+    # done forking.
+    fd = os.open(pidfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    fh = os.fdopen(fd, 'w')
+    setuid(username)
     pid = os.fork()
 
     if pid != 0:
@@ -23,6 +33,8 @@ def daemonize():
     pid = os.fork()
 
     if pid != 0:
+        fh.write('%d\n' % pid)
+        fh.close()
         os._exit(0)
 
     close_stdio()
