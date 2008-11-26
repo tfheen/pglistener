@@ -31,6 +31,7 @@ def main(argv):
         listener.try_connect()
         listener.listen()
         listener.do_update()
+        listener.do_posthooks()
 
     daemon.daemonize()
     daemon.loop(listeners)
