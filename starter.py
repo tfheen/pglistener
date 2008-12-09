@@ -29,16 +29,7 @@ def main(argv):
     configfile = argv[1]
     listeners = list(config.read_config(configfile))
     daemon.daemonize(username, pidfile)
-
-    for listener in listeners:
-        listener.try_connect()
-        listener.do_update()
-        listener.do_posthooks()
-
-    for listener in listeners:
-        listener.listen()
-
-    daemon.loop(listeners)
+    daemon.run(listeners)
     return 0
 
 if __name__ == '__main__':

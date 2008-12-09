@@ -67,3 +67,14 @@ def loop(listeners):
     while True:
         do_iteration(cursors)
 
+def run(listeners):
+    for listener in listeners:
+        listener.try_connect()
+        listener.do_update()
+        listener.do_posthooks()
+
+    for listener in listeners:
+        listener.listen()
+
+    loop(listeners)
+
