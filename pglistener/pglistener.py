@@ -126,7 +126,6 @@ class PgListener:
 
             try:
                 os.chmod(target, orig[stat.ST_MODE])
-                os.chown(target, orig[stat.ST_UID], orig[stat.ST_GID])
             except select.error, (errno, strerror):
                 self.log(syslog.LOG_ERR,
                     "Failed to chmod new file: %s" % strerror)
