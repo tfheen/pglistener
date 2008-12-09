@@ -19,7 +19,6 @@
 import errno
 import os
 import select
-import signal
 import stat
 import syslog
 import time
@@ -160,60 +159,10 @@ class PgListener:
             self.connect()
             self.get_notifies()
 
-    def setup_usr1(self):
-        # Setup a handler for SIGUSR1 which will force and update when the
-        # signal # is received.
-
-        def handle_usr1(signo, frame):
-            self.force_update = True
-
-        signal.signal(signal.SIGUSR1, handle_usr1)
-
     def listen(self):
         # Set up the appropriate notifications
 
         for n in self.notifications:
             self.log(syslog.LOG_INFO, "Listening for: %s" % n)
             self.cursor.execute("listen \"%s\"" % n)
-
-    def monitor(self):
-        """Start the main monitor loop."""
-
-        # Save a bit of typing ;-)
-        cursor = self.cursor
-
-        self.log(syslog.LOG_NOTICE,
-            "Starting monitor for %s" % self.destination)
-
-        self.force_update = False
-        self.setup_usr1()
-        self.listen()
-        self.do_update()
-        notifications = []
-
-        while True:
-            while notifications or self.force_update:
-                if self.force_update:
-                    self.log(syslog.LOG_NOTICE, "Got SIGUSR1, forcing update.")
-                    self.force_update = False
-                else:
-                    self.log(syslog.LOG_DEBUG, "Got: %s" % notifications)
-
-                self.do_update()
-                notifications = self.get_notifies()
-
-            # We've run out of notifications so now we can safely do the
-            # posthooks
-            self.do_posthooks()
-
-            # This blocks, the above is only executed when we do get a
-            # notification
-
-            try:
-                select.select([cursor], [], [])
-            except select.error, (err, strerror):
-                if err != errno.EINTR:
-                    raise
-            else:
-                notifications = self.get_notifies()
 
