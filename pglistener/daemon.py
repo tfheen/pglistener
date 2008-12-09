@@ -4,6 +4,7 @@ import os
 import pwd
 import select
 import sys
+import syslog
 
 def setuid(username):
     uid = pwd.getpwnam(username).pw_uid
@@ -75,6 +76,8 @@ def loop(listeners):
         do_iteration(cursors)
 
 def run(listeners):
+    syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
+
     for listener in listeners:
         listener.try_connect()
         listener.do_update()

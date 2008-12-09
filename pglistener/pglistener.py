@@ -36,12 +36,7 @@ class PgListener:
         self.query = options['query']
         self.notifications = options['notifications']
         self.destination = options['destination']
-        self.syslog = options.get('syslog', 'no').lower() == 'yes'
         self.conn = None
-
-        if self.syslog:
-            # Set the appropriate syslog settings if we are using syslog
-            syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
 
     def try_connect(self):
         if self.conn:
@@ -69,15 +64,7 @@ class PgListener:
             self.sleeptime = 0
 
     def log(self, priority, msg):
-        """Record appropriate logging information. The message that is logged
-        includes the name of the configuration. The priority are those
-        specified in the syslog module."""
-
-        if self.syslog:
-            # Output to syslog if syslog support is enabled
-            syslog.syslog(priority, "%s: %s" % (self.name, msg))
-
-        print "%s: %s" % (self.name, msg)
+        syslog.syslog(priority, "%s: %s" % (self.name, msg))
 
     def do_query(self):
         """Execute the query supplied returning all the rows."""
