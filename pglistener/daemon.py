@@ -51,6 +51,12 @@ class Daemon:
     def __init__(self, listeners):
         self.listeners = listeners
 
+    def err(self, message):
+        syslog.syslog(syslog.LOG_ERR, message)
+
+    def info(self, message):
+        syslog.syslog(syslog.LOG_INFO, message)
+
     def wait_for_notifications(self, cursors):
         try:
             readables, _, _ = select.select(cursors.keys(), [], [], None)
