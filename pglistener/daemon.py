@@ -56,11 +56,16 @@ def do_iteration(cursors):
         else:
             raise
 
+    notifications = set()
+
     for cursor in readables:
         listener = cursors[cursor]
-        notifications = listener.get_notifies()
-        listener.do_update()
-        listener.do_posthooks()
+        notifications.update(listener.get_notifies())
+
+    for listener in cursors.values():
+        if notifications & set(listener.notifications):
+            listener.do_update()
+            listener.do_posthooks()
 
 def loop(listeners):
     cursors = {}
