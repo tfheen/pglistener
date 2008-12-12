@@ -59,11 +59,7 @@ def do_iteration(cursors):
     for cursor in readables:
         listener = cursors[cursor]
         notifications = listener.get_notifies()
-
-        while notifications:
-            listener.do_update()
-            notifications = listener.get_notifies()
-
+        listener.do_update()
         listener.do_posthooks()
 
 def loop(listeners):
