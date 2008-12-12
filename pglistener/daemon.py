@@ -51,7 +51,7 @@ class Daemon:
     def __init__(self, listeners):
         self.listeners = listeners
 
-    def do_iteration(self, cursors):
+    def wait_for_notifications(self, cursors):
         try:
             readables, _, _ = select.select(cursors.keys(), [], [], None)
         except select.error, (err, strerror):
@@ -65,6 +65,11 @@ class Daemon:
         for cursor in readables:
             listener = cursors[cursor]
             notifications.update(listener.get_notifies())
+
+        return notifications
+
+    def do_iteration(self, cursors):
+        notifications = self.wait_for_notifications(cursors)
 
         for listener in cursors.values():
             if notifications & set(listener.notifications):
