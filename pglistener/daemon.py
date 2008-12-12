@@ -47,45 +47,54 @@ def daemonize(username, pidfile):
     close_stdio()
     sys.stderr = FakeStderr()
 
-def do_iteration(cursors):
-    try:
-        readables, _, _ = select.select(cursors.keys(), [], [], None)
-    except select.error, (err, strerror):
-        if err == errno.EINTR:
-            return
-        else:
-            raise
+class Daemon:
+    def __init__(self, listeners):
+        self.listeners = listeners
 
-    notifications = set()
+    def do_iteration(self, cursors):
+        try:
+            readables, _, _ = select.select(cursors.keys(), [], [], None)
+        except select.error, (err, strerror):
+            if err == errno.EINTR:
+                return
+            else:
+                raise
 
-    for cursor in readables:
-        listener = cursors[cursor]
-        notifications.update(listener.get_notifies())
+        notifications = set()
 
-    for listener in cursors.values():
-        if notifications & set(listener.notifications):
+        for cursor in readables:
+            listener = cursors[cursor]
+            notifications.update(listener.get_notifies())
+
+        for listener in cursors.values():
+            if notifications & set(listener.notifications):
+                listener.do_update()
+                listener.do_posthooks()
+
+    def loop(self):
+        cursors = {}
+
+        for listener in self.listeners:
+            cursors[listener.cursor] = listener
+
+        while True:
+            self.do_iteration(cursors)
+
+    def run(self):
+        syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
+
+        for listener in self.listeners:
+            listener.try_connect()
             listener.do_update()
             listener.do_posthooks()
 
-def loop(listeners):
-    cursors = {}
+        for listener in self.listeners:
+            listener.listen()
 
-    for listener in listeners:
-        cursors[listener.cursor] = listener
-
-    while True:
-        do_iteration(cursors)
+        self.loop()
 
 def run(listeners):
-    syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
+    daemon = Daemon(listeners)
+    daemon.run()
 
-    for listener in listeners:
-        listener.try_connect()
-        listener.do_update()
-        listener.do_posthooks()
-
-    for listener in listeners:
-        listener.listen()
-
-    loop(listeners)
 
