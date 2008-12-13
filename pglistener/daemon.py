@@ -62,7 +62,7 @@ class Daemon:
             readables, _, _ = select.select(cursors.keys(), [], [], None)
         except select.error, (err, strerror):
             if err == errno.EINTR:
-                return
+                return []
             else:
                 raise
 
