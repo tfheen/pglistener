@@ -5,6 +5,9 @@ import pwd
 import select
 import sys
 import syslog
+import time
+
+import psycopg2
 
 def setuid(username):
     uid = pwd.getpwnam(username).pw_uid
@@ -49,6 +52,7 @@ def daemonize(username, pidfile):
 
 class Daemon:
     def __init__(self, listeners):
+        self.connections = {}
         self.listeners = listeners
 
     def err(self, message):
@@ -57,9 +61,45 @@ class Daemon:
     def info(self, message):
         syslog.syslog(syslog.LOG_INFO, message)
 
-    def wait_for_notifications(self, cursors):
+    def make_connection(self, dsn):
+        sleeptime = 1
+
+        while True:
+            self.info("connecting to: %s" % dsn)
+
+            try:
+                return psycopg2.connect(dsn)
+            except psycopg2.DatabaseError, e:
+                syslog.syslog(syslog.LOG_ERR, "error: %s" % e)
+                time.sleep(sleeptime)
+
+                if sleeptime < 128:
+                    sleeptime *= 2
+
+    def query(self, listener):
+        sleeptime = 1
+
+        while True:
+            connection = self.connections[listener.dsn]
+            cursor = connection.cursor()
+
+            try:
+                cursor.execute(listener.query)
+                return cursor.fetchall()
+            except psycopg2.DatabaseError, e:
+                syslog.syslog(syslog.LOG_ERR, "error: %s" % e)
+                syslog.syslog(syslog.LOG_ERR, "reconnecting and retrying")
+                self.connections[listener.dsn] = \
+                    self.make_connection(listener.dsn)
+
+    def wait_for_notifications(self):
+        connections = {}
+
+        for conn in self.connections.values():
+            connections[conn.cursor()] = conn
+
         try:
-            readables, _, _ = select.select(cursors.keys(), [], [], None)
+            readables, _, _ = select.select(connections.keys(), [], [], None)
         except select.error, (err, strerror):
             if err == errno.EINTR:
                 return []
@@ -69,39 +109,64 @@ class Daemon:
         notifications = set()
 
         for cursor in readables:
-            listener = cursors[cursor]
-            notifications.update(listener.get_notifies())
+            if not cursor.isready():
+                continue
+
+            conn = connections[cursor]
+            notifications.update([name for pid, name in conn.notifies])
+            conn.notifies[:] = []
 
         return notifications
 
-    def do_iteration(self, cursors):
-        notifications = self.wait_for_notifications(cursors)
+    def update(self, listener):
+        results = self.query(listener)
+        listener.do_write(results, listener.destination)
+        listener.do_posthooks()
 
-        for listener in cursors.values():
-            if notifications & set(listener.notifications):
-                listener.do_update()
-                listener.do_posthooks()
+    def do_iteration(self):
+        notifications = self.wait_for_notifications()
 
-    def loop(self):
-        cursors = {}
+        for notification in notifications:
+            self.info("got notification: %s" % notification)
 
         for listener in self.listeners:
-            cursors[listener.cursor] = listener
+            if notifications & set(listener.notifications):
+                self.info("updating: %s (%s)" %
+                    (listener.name, listener.destination))
+                self.update(listener)
 
+    def loop(self):
         while True:
-            self.do_iteration(cursors)
+            self.do_iteration()
+
+    def listen(self):
+        for dsn, conn in self.connections.iteritems():
+            listens = []
+            cursor = conn.cursor()
+
+            for listener in self.listeners:
+                if listener.dsn == dsn:
+                    for notification in listener.notifications:
+                        self.info("%s: listening for notification: %s" %
+                            (listener.name, notification))
+                        listens.append(notification)
+
+            for listen in listens:
+                cursor.execute('listen \"%s\"' % listen)
 
     def run(self):
         syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
 
         for listener in self.listeners:
-            listener.try_connect()
-            listener.do_update()
-            listener.do_posthooks()
+            if listener.dsn not in self.connections:
+                conn = self.make_connection(listener.dsn)
+                conn.set_isolation_level(0)
+                self.connections[listener.dsn] = conn
 
         for listener in self.listeners:
-            listener.listen()
+            self.update(listener)
 
+        self.listen()
         self.loop()
 
 def run(listeners):
