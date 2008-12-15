@@ -92,6 +92,9 @@ class Daemon:
                 self.connections[listener.dsn] = \
                     self.make_connection(listener.dsn)
 
+                if sleeptime < 128:
+                    sleeptime *= 2
+
     def wait_for_notifications(self):
         connections = {}
 
