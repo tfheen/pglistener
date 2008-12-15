@@ -22,7 +22,7 @@ def close_stdio():
 
 class FakeStderr:
     def write(self, s):
-        for line in s.strip().splitlines():
+        for line in s.rstrip().splitlines():
             syslog.syslog(syslog.LOG_ERR, line)
 
 def daemonize(username, pidfile):
