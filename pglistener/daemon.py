@@ -95,6 +95,14 @@ class Daemon:
                 if sleeptime < 128:
                     sleeptime *= 2
 
+    def get_notifications(self, conn, cursor):
+        if not cursor.isready():
+            return []
+
+        notifications = [name for pid, name in conn.notifies]
+        conn.notifies[:] = []
+        return notifications
+
     def wait_for_notifications(self):
         connections = {}
 
@@ -112,12 +120,18 @@ class Daemon:
         notifications = set()
 
         for cursor in readables:
-            if not cursor.isready():
-                continue
+            try:
+                notifications.update(
+                    self.get_notifications(connections[cursor], cursor))
+            except psycopg2.DatabaseError, e:
+                # Probably end of file due to losing the connection.
+                # Reconnect.
 
-            conn = connections[cursor]
-            notifications.update([name for pid, name in conn.notifies])
-            conn.notifies[:] = []
+                self.err(str(e))
+
+                for dsn, c in self.connections.iteritems():
+                    if c is conn:
+                        self.connections[dsn] = self.make_connection(dsn)
 
         return notifications
 
