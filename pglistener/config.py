@@ -5,7 +5,9 @@ from ConfigParser import RawConfigParser
 
 def read_config(path):
     cf = RawConfigParser()
-    cf.read(path)
+
+    if cf.read(path) == []:
+        raise RuntimeError("couldn't read config file")
 
     for section in cf.sections():
         classname = cf.get(section, 'class')
