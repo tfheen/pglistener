@@ -35,8 +35,11 @@ class PgListener:
         self.destination = options['destination']
         self.conn = None
 
-    def log(self, priority, msg):
-        syslog.syslog(priority, "%s: %s" % (self.name, msg))
+    def err(self, msg):
+        syslog.syslog(syslog.LOG_ERR, "%s: %s" % (self.name, msg))
+
+    def info(self, msg):
+        syslog.syslog(syslog.LOG_INFO, "%s: %s" % (self.name, msg))
 
     def do_format(self, row):
         """Apply the format string against a row."""
@@ -74,13 +77,12 @@ class PgListener:
             try:
                 os.chmod(target, orig[stat.ST_MODE])
             except select.error, (errno, strerror):
-                self.log(syslog.LOG_ERR,
-                    "failed to chmod new file: %s" % strerror)
+                self.err("failed to chmod new file: %s" % strerror)
 
     def do_posthooks(self):
         """Execute all the provided hooks."""
 
         for hook in self.options.get('posthooks', '').strip().splitlines():
-            self.log(syslog.LOG_INFO, "executing: %s" % hook)
+            self.info("executing: %s" % hook)
             os.system(hook)
 
