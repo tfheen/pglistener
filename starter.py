@@ -26,7 +26,13 @@ pidfile = '/var/run/pglistener/pglistener.pid'
 
 def main(argv):
     configfile = argv[1]
-    listeners = list(config.read_config(configfile))
+
+    try:
+        listeners = list(config.read_config(configfile))
+    except RuntimeError:
+        print >>sys.stderr, "pglistener: couldn't read configuration file"
+        return 1
+
     daemon.daemonize(pidfile)
     daemon.run(listeners)
     return 0
