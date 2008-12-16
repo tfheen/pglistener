@@ -75,12 +75,12 @@ class PgListener:
                 os.chmod(target, orig[stat.ST_MODE])
             except select.error, (errno, strerror):
                 self.log(syslog.LOG_ERR,
-                    "Failed to chmod new file: %s" % strerror)
+                    "failed to chmod new file: %s" % strerror)
 
     def do_posthooks(self):
         """Execute all the provided hooks."""
 
         for hook in self.options.get('posthooks', '').strip().splitlines():
-            self.log(syslog.LOG_INFO, "Executing: %s" % hook)
+            self.log(syslog.LOG_INFO, "executing: %s" % hook)
             os.system(hook)
 
