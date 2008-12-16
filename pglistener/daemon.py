@@ -178,6 +178,7 @@ class Daemon:
 
     def run(self):
         syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
+        self.info('starting up')
 
         for listener in self.listeners:
             if listener.dsn not in self.connections:
