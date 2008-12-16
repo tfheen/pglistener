@@ -65,7 +65,7 @@ class Daemon:
             try:
                 return psycopg2.connect(dsn)
             except psycopg2.DatabaseError, e:
-                syslog.syslog(syslog.LOG_ERR, "error: %s" % e)
+                self.err("error: %s" % e)
                 time.sleep(sleeptime)
 
                 if sleeptime < 128:
@@ -82,8 +82,8 @@ class Daemon:
                 cursor.execute(listener.query)
                 return cursor.fetchall()
             except psycopg2.DatabaseError, e:
-                syslog.syslog(syslog.LOG_ERR, "error: %s" % e)
-                syslog.syslog(syslog.LOG_ERR, "reconnecting and retrying")
+                self.err("error: %s" % e)
+                self.err("reconnecting and retrying")
                 self.connections[listener.dsn] = \
                     self.make_connection(listener.dsn)
 
