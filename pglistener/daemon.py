@@ -9,10 +9,6 @@ import time
 
 import psycopg2
 
-def setuid(username):
-    uid = pwd.getpwnam(username).pw_uid
-    os.setuid(uid)
-
 def close_stdio():
     fh = file(os.devnull, 'r')
     os.dup2(fh.fileno(), 0)
@@ -28,12 +24,11 @@ class FakeStderr:
         for line in s.rstrip().splitlines():
             syslog.syslog(syslog.LOG_ERR, line)
 
-def daemonize(username, pidfile):
-    # Open the PID file before we drop privileges, but write it after we're
-    # done forking.
+def daemonize(pidfile):
+    # Open the PID file before we fork, so that our parent will see an error
+    # if we fail.
     fd = os.open(pidfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     fh = os.fdopen(fd, 'w')
-    setuid(username)
     pid = os.fork()
 
     if pid != 0:
