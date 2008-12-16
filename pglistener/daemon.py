@@ -27,7 +27,7 @@ class FakeStderr:
 def daemonize(pidfile):
     # Open the PID file before we fork, so that our parent will see an error
     # if we fail.
-    fd = os.open(pidfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    fd = os.open(pidfile, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0644)
     fh = os.fdopen(fd, 'w')
     pid = os.fork()
 
