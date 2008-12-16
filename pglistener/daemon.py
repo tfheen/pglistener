@@ -2,6 +2,7 @@
 import errno
 import os
 import pwd
+import re
 import select
 import sys
 import syslog
@@ -45,6 +46,16 @@ def daemonize(pidfile):
     close_stdio()
     sys.stderr = FakeStderr()
 
+def format_dsn(dsn):
+    matches = re.findall('([^\s=]+)=(\S+)', dsn)
+    acc = []
+
+    for k, v in matches:
+        if k != 'password':
+            acc.append('%s=%s' % (k, v))
+
+    return ' '.join(acc)
+
 class Daemon:
     def __init__(self, listeners):
         self.connections = {}
@@ -60,7 +71,7 @@ class Daemon:
         sleeptime = 1
 
         while True:
-            self.info("connecting to: %s" % dsn)
+            self.info("connecting to: %s" % format_dsn(dsn))
 
             try:
                 return psycopg2.connect(dsn)
