@@ -131,6 +131,8 @@ class Daemon:
         return notifications
 
     def update(self, listener):
+        self.info("updating: %s (%s)" %
+            (listener.name, listener.destination))
         results = self.query(listener)
         listener.do_write(results, listener.destination)
         listener.do_posthooks()
@@ -143,8 +145,6 @@ class Daemon:
 
         for listener in self.listeners:
             if notifications & set(listener.notifications):
-                self.info("updating: %s (%s)" %
-                    (listener.name, listener.destination))
                 self.update(listener)
 
     def loop(self):
