@@ -169,10 +169,9 @@ class Daemon:
 
             for listener in self.listeners:
                 if listener.dsn == dsn:
-                    for notification in listener.notifications:
-                        self.info("%s: listening for notification: %s" %
-                            (listener.name, notification))
-                        listens.append(notification)
+                    self.info("%s: listening for: %s" %
+                        (listener.name, ' '.join(listener.notifications)))
+                    listens.extend(listener.notifications)
 
             for listen in listens:
                 cursor.execute('listen \"%s\"' % listen)
