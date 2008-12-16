@@ -22,7 +22,7 @@ import sys
 
 from pglistener import config, daemon
 
-pidfile = '/var/run/pglistener.pid'
+pidfile = '/var/run/pglistener/pglistener.pid'
 
 def main(argv):
     configfile = argv[1]
