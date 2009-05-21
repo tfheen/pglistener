@@ -1,0 +1,17 @@
+
+== Installation Hints ==
+
+=== Hooks ===
+
+ * Allow the pglisten user to run any commands in /var/lib/pglisten/hooks as
+   root using sudo. This is useful for changing ownership of files.
+
+=== NSS ===
+
+ * Ensure that the DB backend for NSS is installed.
+
+ * Enable the db backend for for the passwd/group/shadow entries in
+   nssswitch.conf.
+
+ * Create symlinks from /var/lib/misc/*.db to the generated files.
+
