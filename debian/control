@@ -1,6 +1,7 @@
 Source: pglistener
 Section: misc
 Priority: optional
+Build-Depends: debhelper (>= 5)
 Maintainer: Dafydd Harries <daf@debian.org>
 
 Package: pglistener
