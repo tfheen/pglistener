@@ -1,0 +1,23 @@
+#! /bin/sh
+
+set -e
+
+case "$1" in
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+    purge)
+        getent passwd pglisten >/dev/null && \
+        if [ -x /usr/sbin/deluser ]; then
+            deluser --quiet --system pglisten
+        fi
+        rm -rf /var/lib/pglistener
+        ;;
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+esac
+
+#DEBHELPER#
+
+exit 0
+

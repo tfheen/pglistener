@@ -1,0 +1,11 @@
+Source: pglistener
+Section: misc
+Priority: optional
+Maintainer: Dafydd Harries <daf@debian.org>
+
+Package: pglistener
+Depends: python-psycopg2, lsb-base (>= 3.0-6), adduser
+Architecture: all
+Description: Postgres listener
+ Daemon that generates files from Postgres when Postgres data is modified.
+

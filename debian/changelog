@@ -1,0 +1,5 @@
+pglistener (0-1) unstable; urgency=low
+
+  * Initial package.
+
+ -- Dafydd Harries <daf@debian.org>  Thu, 20 Nov 2008 13:18:22 +0000

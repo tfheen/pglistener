@@ -1,0 +1,35 @@
+#! /bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        if ! getent passwd pglisten >/dev/null; then
+            echo "Creating pglistener user account..."
+            adduser --home /var/lib/pglistener \
+                --gecos "pgListener system user" \
+                --system --quiet --group --disabled-password pglisten
+
+        fi
+
+        mkdir -p /var/lib/pglistener/hooks
+        chown pglisten:pglisten /var/lib/pglistener/hooks
+
+        chown pglisten:pglisten /etc/pglistener
+        chmod 700 /etc/pglistener
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
+

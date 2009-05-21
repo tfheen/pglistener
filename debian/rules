@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+build:
+
+binary-arch:
+
+binary-indep:
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	install -T -m 600 /dev/null debian/pglistener/etc/pglistener/pglistener.cfg
+
+	dh_install
+	dh_installchangelogs
+	dh_installinit pglistener.init
+	dh_installdeb
+	dh_gencontrol
+	dh_compress
+	dh_fixperms
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+
