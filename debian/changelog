@@ -1,3 +1,15 @@
+pglistener (0-3) lenny; urgency=low
+
+  * Make sure to include the sshkeys class
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Thu, 21 May 2009 18:56:22 +0200
+
+pglistener (0-2) lenny; urgency=low
+
+  * Add MailingList class
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Thu, 21 May 2009 11:10:15 +0200
+
 pglistener (0-1) unstable; urgency=low
 
   * Initial package.
