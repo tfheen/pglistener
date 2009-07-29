@@ -1,4 +1,5 @@
 
+import bsddb
 import os
 import sys
 import shutil
@@ -8,6 +9,7 @@ import unittest
 import coverage
 
 from pglistener import pglistener
+from pglistener.nsspasswddb import NssPasswdDb
 
 class TestListener(pglistener.PgListener):
     def __init__(self, options):
@@ -32,6 +34,34 @@ class PgListenerTest(unittest.TestCase):
             })
         listener.do_write([('a', '1'), ('b', '2')], listener.destination)
         self.assertEquals('a:1\nb:2\n', file(destination).read())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+class NssPasswdDbTest(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def runTest(self):
+        destination = os.path.join(self.tmpdir, 'destination')
+        listener = NssPasswdDb({
+            'name': 'fake',
+            'dsn': 'fake',
+            'notifications': [],
+            'destination': destination,
+            'format': '%s:%s\\n',
+            'query': 'fake query'
+            })
+        listener.do_write([
+            ('amy', 'x', 1000, 1000, 'amy', '/home/amy', '/bin/bash'),
+            ('beth', 'x', 1001, 1001, 'beth', '/home/beth', '/bin/zsh')],
+            listener.destination)
+        db = bsddb.btopen(listener.destination, "r")
+        self.assertEquals(
+            'amy:x:1000:1000:amy:/home/amy:/bin/bash\x00', db['.amy'])
+        self.assertEquals(
+            'beth:x:1001:1001:beth:/home/beth:/bin/zsh\x00', db['=1001'])
+        db.close()
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
