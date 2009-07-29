@@ -9,7 +9,7 @@ import unittest
 import coverage
 
 from pglistener import pglistener
-from pglistener.config import read_config
+from pglistener.config import read_configs
 from pglistener.nsspasswddb import NssPasswdDb
 
 class TestListener(pglistener.PgListener):
@@ -73,6 +73,8 @@ class ConfigTest(unittest.TestCase):
 
     def runTest(self):
         config_file = os.path.join(self.tmpdir, 'pglistener.cfg')
+        config_dir = os.path.join(self.tmpdir, 'pglistener.d')
+        os.mkdir(config_dir)
 
         def write_file(path, s):
             fh = file(path, 'w')
@@ -87,8 +89,10 @@ class ConfigTest(unittest.TestCase):
             'query = fake\n' +
             'destination = fake\n')
         write_file(config_file, config_str % 'foo')
-        (foo,) = list(read_config(config_file))
+        write_file(os.path.join(config_dir, 'bar.cfg'), config_str % 'bar')
+        (foo, bar) = list(read_configs([config_file, config_dir]))
         self.assertEquals('foo', foo.name)
+        self.assertEquals('bar', bar.name)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
