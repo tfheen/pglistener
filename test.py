@@ -9,6 +9,7 @@ import unittest
 import coverage
 
 from pglistener import pglistener
+from pglistener.config import read_config
 from pglistener.nsspasswddb import NssPasswdDb
 
 class TestListener(pglistener.PgListener):
@@ -62,6 +63,32 @@ class NssPasswdDbTest(unittest.TestCase):
         self.assertEquals(
             'beth:x:1001:1001:beth:/home/beth:/bin/zsh\x00', db['=1001'])
         db.close()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+class ConfigTest(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def runTest(self):
+        config_file = os.path.join(self.tmpdir, 'pglistener.cfg')
+
+        def write_file(path, s):
+            fh = file(path, 'w')
+            fh.write(s)
+            fh.close()
+
+        config_str = (
+            '[%s]\n' +
+            'class = NssDb\n' +
+            'notifications = foo\n' +
+            'dsn = fake\n' +
+            'query = fake\n' +
+            'destination = fake\n')
+        write_file(config_file, config_str % 'foo')
+        (foo,) = list(read_config(config_file))
+        self.assertEquals('foo', foo.name)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
