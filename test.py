@@ -10,6 +10,7 @@ import coverage
 
 from pglistener import pglistener
 from pglistener.config import read_configs
+from pglistener.flatfile import FlatFile
 from pglistener.nsspasswddb import NssPasswdDb
 
 class TestListener(pglistener.PgListener):
@@ -63,6 +64,25 @@ class NssPasswdDbTest(unittest.TestCase):
         self.assertEquals(
             'beth:x:1001:1001:beth:/home/beth:/bin/zsh\x00', db['=1001'])
         db.close()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+class FlatFileTest(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def runTest(self):
+        destination = os.path.join(self.tmpdir, 'destination')
+        listener = FlatFile({
+            'name': 'fake',
+            'dsn': 'fake',
+            'notifications': [],
+            'destination': destination,
+            'query': 'fake query'
+            })
+        listener.do_write([('1', 'foo'), ('2', 'bar')], listener.destination)
+        self.assertEquals('1\tfoo\n2\tbar\n', file(listener.destination).read())
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
