@@ -67,6 +67,9 @@ class Daemon:
     def info(self, message):
         syslog.syslog(syslog.LOG_INFO, message)
 
+    def _make_connection(self, dsn):
+        return psycopg2.connect(dsn)
+
     def make_connection(self, dsn):
         sleeptime = 1
 
@@ -74,7 +77,7 @@ class Daemon:
             self.info("connecting to: %s" % format_dsn(dsn))
 
             try:
-                return psycopg2.connect(dsn)
+                return self._make_connection(dsn)
             except psycopg2.DatabaseError, e:
                 self.err("error: %s" % e)
                 time.sleep(sleeptime)
@@ -176,8 +179,10 @@ class Daemon:
             for listen in listens:
                 cursor.execute('listen \"%s\"' % listen)
 
-    def run(self):
+    def openlog(self):
         syslog.openlog('pglistener', syslog.LOG_PID, syslog.LOG_DAEMON)
+
+    def run(self):
         self.info('starting up')
 
         for listener in self.listeners:

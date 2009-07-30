@@ -10,6 +10,7 @@ import coverage
 
 from pglistener import pglistener
 from pglistener.config import read_configs
+from pglistener.daemon import Daemon
 from pglistener.flatfile import FlatFile
 from pglistener.nsspasswddb import NssPasswdDb
 
@@ -116,6 +117,81 @@ class ConfigTest(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
+
+class DaemonTest(unittest.TestCase):
+    def runTest(self):
+        class FakeCursor(object):
+            def execute(self, query):
+                pass
+
+            def fetchall(self):
+                return "fake data"
+
+            def isready(self):
+                return True
+
+            def fileno(self):
+                (rfd, wfd) = os.pipe()
+                os.write(wfd, '\0')
+                return rfd
+
+        class FakeConnection(object):
+            notifies = [(0, 'fake notification')]
+
+            def cursor(self):
+                return FakeCursor()
+
+            def set_isolation_level(self, level):
+                pass
+
+        class Listener(object):
+            def __init__(self):
+                self.dsn = 'hostname=fake,password=foo'
+                self.name = 'fake name'
+                self.query = 'fake query'
+                self.destination = 'fake destination'
+                self.notifications = ['fake notification']
+                self.log = []
+
+            def log(self, *data):
+                self.log.append(data)
+
+            def do_write(self, data, destination):
+                self.log.append(('do_write', data, destination))
+
+            def do_posthooks(self):
+                self.log.append(('do_posthooks',))
+
+        class TestDaemon(Daemon):
+            def _make_connection(self, dsn):
+                return FakeConnection()
+
+            def err(self, msg):
+                #print 'err: %s' % msg
+                pass
+
+            def info(self, msg):
+                #print 'info: %s' % msg
+                pass
+
+            def openlog(self):
+                pass
+
+            def loop(self):
+                pass
+
+        listener = Listener()
+        daemon = TestDaemon([listener])
+        daemon.run()
+        daemon.do_iteration()
+        # Second iteration should do nothing since the connection's
+        # notification list will have been emptied.
+        daemon.do_iteration()
+        self.assertEquals(
+             [('do_write', 'fake data', 'fake destination'),
+              ('do_posthooks',),
+              ('do_write', 'fake data', 'fake destination'),
+              ('do_posthooks',)], listener.log)
 
 def run_coverage(*args):
     os.spawnlp(os.P_WAIT, 'python', 'python', coverage.__file__, *args)
