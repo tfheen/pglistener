@@ -26,7 +26,7 @@ from pglistener import config, daemon
 pidfile = '/var/run/pglistener/pglistener.pid'
 
 def main(argv):
-    config_files = argv
+    config_files = argv[1:]
 
     try:
         listeners = list(config.read_configs(config_files))
