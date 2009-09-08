@@ -1,3 +1,11 @@
+pglistener (0-5) lenny; urgency=low
+
+  * Fix silly typo in starter.py and update.py where it would fail to
+    start since config.read_config has now been renamed to
+    config.read_configs.  
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Tue, 08 Sep 2009 11:26:18 +0200
+
 pglistener (0-4) lenny; urgency=low
 
   [ Dafydd Harries ]

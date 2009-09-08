@@ -29,7 +29,7 @@ def main(argv):
     config_files = argv
 
     try:
-        listeners = list(config.read_config(config_files))
+        listeners = list(config.read_configs(config_files))
     except RuntimeError:
         print >>sys.stderr, "pglistener: couldn't read configuration file"
         return 1

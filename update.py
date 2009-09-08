@@ -9,7 +9,7 @@ def main(argv):
     sections = argv[2:]
 
     listeners = dict([(l.name, l) for l in
-        config.read_config(configfile)])
+        config.read_configs(configfile)])
 
     if not sections:
         sections = listeners.keys()
