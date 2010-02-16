@@ -7,6 +7,7 @@ import select
 import sys
 import syslog
 import time
+import socket
 
 import psycopg2
 
@@ -88,6 +89,12 @@ class Daemon:
         while True:
             connection = self.connections[listener.dsn]
             cursor = connection.cursor()
+            if hasattr(socket, 'SO_KEEPALIVE'):
+                fd = db.cursor().fileno()
+                s = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
+                # avoid unix sockets
+                if type(s.getsockname()) == type(()):
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
             try:
                 cursor.execute(listener.query)
