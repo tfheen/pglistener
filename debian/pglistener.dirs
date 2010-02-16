@@ -1,2 +1,3 @@
 /etc/init.d
 /etc/pglistener
+/etc/pglistener/conf.d

@@ -1,5 +1,5 @@
 # Postgres Listener, writes out flatfiles when SQL NOTIFYs are triggered
-# Copyright (C) 2008 Dafydd Harries <dafydd.harries@collabora.co.uk>
+# Copyright (C) 2008 Collabora Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

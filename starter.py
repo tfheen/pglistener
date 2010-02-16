@@ -18,6 +18,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import os
 import sys
 
 from pglistener import config, daemon
@@ -25,10 +26,10 @@ from pglistener import config, daemon
 pidfile = '/var/run/pglistener/pglistener.pid'
 
 def main(argv):
-    configfile = argv[1]
+    config_files = argv[1:]
 
     try:
-        listeners = list(config.read_config(configfile))
+        listeners = list(config.read_configs(config_files))
     except RuntimeError:
         print >>sys.stderr, "pglistener: couldn't read configuration file"
         return 1

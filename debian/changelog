@@ -1,3 +1,25 @@
+pglistener (0-5) lenny; urgency=low
+
+  * Fix silly typo in starter.py and update.py where it would fail to
+    start since config.read_config has now been renamed to
+    config.read_configs.  
+  * Make starter.py only look at argv[1:] to avoid trying to parse itself
+    as a config file.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Tue, 08 Sep 2009 11:26:18 +0200
+
+pglistener (0-4) lenny; urgency=low
+
+  [ Dafydd Harries ]
+  * Add support for config directories in addition to a single file.
+  * Add more tests.
+
+  [ Tollef Fog Heen ]
+  * Add myself to uploaders.
+  * Look for configs in /etc/pglistener/conf.d by default.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Fri, 28 Aug 2009 23:30:19 +0200
+
 pglistener (0-3) lenny; urgency=low
 
   * Make sure to include the sshkeys class
