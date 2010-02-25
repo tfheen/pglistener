@@ -1,3 +1,9 @@
+pglistener (0-7) lenny; urgency=low
+
+  * Fix typo
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Thu, 25 Feb 2010 08:48:37 +0100
+
 pglistener (0-6) lenny; urgency=low
 
   * Turn on TCP keepalives if possible.  This should make us better at
