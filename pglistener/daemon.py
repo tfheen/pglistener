@@ -93,7 +93,7 @@ class Daemon:
             connection = self.connections[listener.dsn]
             cursor = connection.cursor()
             if hasattr(socket, 'SO_KEEPALIVE'):
-                fd = db.cursor().fileno()
+                fd = cursor.fileno()
                 s = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
                 # avoid unix sockets
                 if type(s.getsockname()) == type(()):
