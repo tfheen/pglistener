@@ -1,3 +1,10 @@
+pglistener (0-6) lenny; urgency=low
+
+  * Turn on TCP keepalives if possible.  This should make us better at
+    detecting when the connection goes away.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Tue, 16 Feb 2010 11:36:10 +0100
+
 pglistener (0-5) lenny; urgency=low
 
   * Fix silly typo in starter.py and update.py where it would fail to
