@@ -1,0 +1,287 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+use Config::File;
+use FindBin;
+use DBI;
+use lib "$FindBin::Bin/../lib";
+use Sys::Syslog;
+use Term::ReadLine;
+use 5.010;
+use feature ":5.10";
+use utf8;
+use Pglistener::Schema;
+use Data::Dumper;
+
+binmode STDOUT, ":utf8";
+
+my $config = Config::File::read_config_file("$FindBin::Bin/../etc/pua.conf");
+my $schema = Pglistener::Schema->connect("dbi:Pg:dbname=" . $config->{DBNAME} . ";host=" . $config->{DBHOST}, 
+				   $config->{DBUSER}, $config->{DBPASS}, {pg_enable_utf8 => 1})
+	or die $DBI::errstr;
+my $currentuser = undef;
+
+sub help() {
+	q[
+new $name [--groupname]
+$name => if matches multiple, list all of them
+    ssh list
+    ssh add [host $hostname], reads string, waits for C-d
+    ssh delete $id
+
+]
+}
+
+my $term = new Term::ReadLine 'Pglistener account management';
+
+sub get_prompt {
+	my $u = shift;
+	return "cmd >> " unless defined $u;
+	return sprintf "cmd [user=%s] >> ", $u->username;
+}
+
+sub create_new_user {
+	my ($OUT, $schema, $username, $group) = (@_);
+	$group ||= "collabora";
+	my $txn = sub {
+		my $user = $schema->resultset('Account')->create({ username => $username,
+								   name => 'Not set yet'
+								 });
+		my $g = $schema->resultset('Group')->search(
+			{ name => $group });
+		$user->add_to_groups($g->first);
+		return $user;
+	};
+	my $user = $schema->txn_do($txn);
+	return $user;
+}
+
+sub find_and_set_user {
+	my ($OUT, $schema, $line) = (@_);
+	my @accounts = $schema->resultset('Account')->search(
+		[ { name => { like => "%$line%" } },
+		  { username => { like => "%$line%" } } ]
+	);
+
+	if (scalar @accounts > 1) {
+		print $OUT "Search '$line' matches more than one user\n";
+		for my $account (@accounts) {
+			printf $OUT "%s (%s)\n", $account->name, $account->username;
+		}
+	} elsif (scalar @accounts == 1) {
+		return $accounts[0];
+	} else {
+		print $OUT help();
+	}
+	return undef;
+}
+
+sub ssh_keys_list {
+	my ($OUT, $user) = (@_);
+	my $host = "";
+	for my $key ($user->sshkeys->search(undef, { order_by => "hostname" })) {
+		if (not $key->hostname ~~ $host) {
+			printf $OUT "Host: %s\n", $key->hostname // "All";
+		}
+		printf $OUT "%d %s %s\n", $key->ssh_key_id, 
+		$key->key_base64, $key->comment;
+		$host = $key->hostname;
+	}
+}
+
+sub ssh_keys_add {
+	my ($OUT, $IN, $user, $hostname) = (@_);
+	my $string;
+	print $OUT "Waiting for SSH key, end with '.' alone on a line\n";
+	{ local $/ = "\n.\n"; $string = <$IN> };
+	my ($key, $comment) = ($string =~ m/(?:ssh-rsa\s+)?(\S+)\s+(\S+)/s);
+	$user->sshkeys->create(
+		{ key_base64 => $key,
+		  comment => $comment,
+		  account_id => $user->account_id,
+		  hostname => $hostname
+		});
+}
+
+sub ssh_keys_delete {
+	my ($OUT, $user, $keyid) = (@_);
+	$user->sshkeys->search({ssh_key_id => $keyid})->delete;
+}
+
+sub user_set_field {
+	my ($OUT, $user, $field, $value) = (@_);
+	eval {
+		$user->update({$field => $value});
+	};
+	if ($@) {
+		print $OUT $@;
+	}
+}
+
+sub user_print_field {
+	my ($OUT, $user, $field) = (@_);
+	eval {
+		printf $OUT "%-20s: %s\n", $field, $user->$field // '';
+	};
+	if ($@ && $@ =~ "^Can't locate object method") {
+		print $OUT "No such field $field\n";
+	}
+}
+
+sub user_revoke {
+	my ($OUT, $user, $schema, $community) = (@_);
+	$user->update({ password => undef,
+			shell => '/bin/false',
+			enabled => 'false'});
+	$user->remove_from_groups($user->groups->search);
+	if (defined $community and $community) {
+		$user->sshkeys->update_all({ hostname => 'dhansak.collabora.co.uk' });
+		user_groups_add($OUT, $user, $schema, "community");
+	} else {
+		$user->sshkeys->delete_all;
+	}
+	$user->emails->delete_all;
+}
+
+sub user_groups_list {
+	my ($OUT, $user) = (@_);
+	for my $group ($user->groups->search(undef, { order_by => "name" })) {
+		printf $OUT "%s\n", $group->name;
+	}
+}
+
+sub user_groups_add {
+	my ($OUT, $user, $schema, $group) = (@_);
+	my $g = $schema->resultset('Group')->search(
+                { name => $group });
+	$user->add_to_groups($g->first);
+}
+
+sub user_groups_delete {
+	my ($OUT, $user, $group) = (@_);
+	$user->remove_from_groups($user->groups->search({name => $group}));
+}
+
+sub email_list {
+	my ($OUT, $user) = (@_);
+	for my $email ($user->emails->search(undef, { order_by => ["domainpart","localpart"] })) {
+		printf $OUT "%s %s@%s\n", $email->customary ? "*" : " ", $email->localpart, 
+		$email->domainpart;
+	}
+}
+
+sub email_add {
+	my ($OUT, $user, $email, $customary) = (@_);
+	my ($localpart, $domainpart) = split "@", $email; 
+	$user->emails->create(
+		{ localpart => $localpart,
+		  domainpart => $domainpart,
+		  customary => $customary
+		});
+}
+
+sub email_delete {
+	my ($OUT, $user, $email) = (@_);
+	my ($localpart, $domainpart) = split "@", $email; 
+	$user->emails->search({localpart => $localpart,
+			       domainpart => $domainpart})->delete;
+}
+
+my $attribs = $term->Attribs;
+$attribs->{completion_function} = sub {
+	my ($text, $line, $start) = @_;
+	return qw(a list of candidates to complete);
+};
+
+my $OUT = $term->OUT || \*STDOUT;
+my $IN = $term->IN || \*STDIN;
+while (1) {
+	my $line = $term->readline(get_prompt($currentuser));
+	last unless (defined $line or defined $currentuser);
+	if (not defined $currentuser) {
+		given ($line) {
+			when (/^new (\S+)(?: -?-?(\S+))?$/) {
+				$currentuser = create_new_user($OUT, $schema, $1, $2);
+			}
+			when (/^(\S+)$/) {
+				$currentuser = find_and_set_user($OUT, $schema, $line);
+			}
+			default {
+				print $OUT help();
+			}
+		}
+	} else {
+		if (not defined $line) {
+			undef $currentuser;
+			next;
+		}
+		given ($line) {
+			when (/^(?:cd\s*)?\.\./) {
+				undef $currentuser;
+			}
+			when ("ssh list") {
+				ssh_keys_list($OUT, $currentuser);
+			}
+			when (/ssh add(?: -?-?host[=\s](\S+))?/) {
+				ssh_keys_add($OUT, $IN, $currentuser, $1);
+			}
+			when (/ssh delete (\d+)/) {
+				ssh_keys_delete($OUT, $currentuser, $1);
+			}
+			when (/set name\s+(.+)/) {
+				user_set_field($OUT, $currentuser, name => $1);
+			}
+			when (/set shell (\S+)/) {
+				user_set_field($OUT, $currentuser, shell => $1);
+			}
+			when (/set password (\S+)/) {
+				user_set_field($OUT, $currentuser, password => $1);
+			}
+			when (/set gpg_key (.+)/) {
+				user_set_field($OUT, $currentuser, gpg_key => $1);
+			}
+			when (/show(?: (.+))?/) {
+				if (defined $1) {
+					user_print_field($OUT, $currentuser, $1);
+				} else {
+					for my $f (qw(account_id username name shell password enabled gpg_key)) {
+						user_print_field($OUT, $currentuser, $f);
+					}
+				}
+			}
+			when (/disable/) {
+				user_set_field($OUT, $currentuser, enabled => 'false');
+			}
+			when (/enable/) {
+				user_set_field($OUT, $currentuser, enabled => 'true');
+			}
+			when (/revoke(\s+-?-?community)?/) {
+				user_revoke($OUT, $currentuser, $schema, $1);
+			}
+			when (/^groups?( list|$)/) {
+				user_groups_list($OUT, $currentuser);
+			}
+			when (/group add (\S+)/) {
+				user_groups_add($OUT, $currentuser, $schema, $1);
+			}
+			when (/group delete (\S+)/) {
+				user_groups_delete($OUT, $currentuser, $1);
+			}
+			when (/emails? list/) {
+				email_list($OUT, $currentuser);
+			}
+			when (/email add (\S+)( +-?-?customary)?/) {
+				email_add($OUT, $currentuser, $1, (defined $2 ? 'true' : 'false'));
+			}
+			when (/email delete (\S+)/) {
+				email_delete($OUT, $currentuser, $1);
+			}
+			default {
+                                print $OUT help();
+                        }
+		}
+	}
+	$term->addhistory($line) if ($line =~ /\S/ and not defined $term->Features->{autohistory});
+}
