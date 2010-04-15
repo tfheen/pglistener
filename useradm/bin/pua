@@ -196,6 +196,11 @@ sub email_list {
 sub email_add {
 	my ($OUT, $user, $email, $customary) = (@_);
 	my ($localpart, $domainpart) = split "@", $email; 
+	if (not defined $customary) {
+		if ($user->emails->count == 0) {
+			$customary = 'true';
+		}
+	}
 	$user->emails->create(
 		{ localpart => $localpart,
 		  domainpart => $domainpart,
