@@ -6,7 +6,7 @@ use warnings;
 use Config::File;
 use FindBin;
 use DBI;
-use lib "$FindBin::Bin/../lib";
+use lib "/usr/share/pglistener/perl";
 use Sys::Syslog;
 use Term::ReadLine;
 use 5.010;
@@ -17,7 +17,7 @@ use Data::Dumper;
 
 binmode STDOUT, ":utf8";
 
-my $config = Config::File::read_config_file("$FindBin::Bin/../etc/pua.conf");
+my $config = Config::File::read_config_file("/etc/pua.conf");
 my $schema = Pglistener::Schema->connect("dbi:Pg:dbname=" . $config->{DBNAME} . ";host=" . $config->{DBHOST}, 
 				   $config->{DBUSER}, $config->{DBPASS}, {pg_enable_utf8 => 1})
 	or die $DBI::errstr;
