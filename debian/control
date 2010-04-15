@@ -6,7 +6,7 @@ Maintainer: Dafydd Harries <daf@debian.org>
 Uploaders: Tollef Fog Heen <tfheen@debian.org>
 
 Package: pglistener
-Depends: python-psycopg2, lsb-base (>= 3.0-6), adduser
+Depends: python-psycopg2, lsb-base (>= 3.0-6), adduser, libdbix-class-perl
 Architecture: all
 Description: Postgres listener
  Daemon that generates files from Postgres when Postgres data is modified.
