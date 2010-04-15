@@ -25,12 +25,33 @@ my $currentuser = undef;
 
 sub help() {
 	q[
-new $name [--groupname]
-$name => if matches multiple, list all of them
-    ssh list
-    ssh add [host $hostname], reads string, waits for C-d
-    ssh delete $id
-
+Create new user:
+    new $name [--groupname]
+Edit a particular user:
+    enter (part of) the name
+When editing a user, the following commands are available:
+    C-d/EOF to exit the current user
+    SSH keys:
+        ssh list
+        ssh add [host $hostname], reads string, waits for C-d
+        ssh delete $id
+    Setting and getting fields:
+        set name $name
+        set shell $shell
+        set password $md5sum
+        set gpg_key $gpg_fingerprint
+        show [$field]
+        disable
+        enable
+        revoke [--community]
+    Managing group membership
+        group list
+        group add $group
+        group delete $group
+    Managing email addresses
+        email list
+        email add $email [--customary]
+        email delete $email
 ]
 }
 
