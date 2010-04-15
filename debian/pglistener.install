@@ -2,3 +2,6 @@ pglistener/*.py /usr/share/pglistener/pglistener
 starter.py /usr/share/pglistener
 update.py /usr/share/pglistener
 hooks/copy-ssh-keys.sh /usr/share/doc/pglistener/examples
+useradm/bin/* /usr/bin
+useradm/etc/* /etc
+useradm/lib/Pglistener /usr/share/pglistener/perl
