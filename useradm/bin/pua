@@ -153,17 +153,29 @@ sub user_print_field {
 
 sub user_revoke {
 	my ($OUT, $user, $schema, $community) = (@_);
-	$user->update({ password => undef,
-			shell => '/bin/false',
-			enabled => 'false'});
-	$user->remove_from_groups($user->groups->search);
-	if (defined $community and $community) {
-		$user->sshkeys->update_all({ hostname => 'dhansak.collabora.co.uk' });
-		user_groups_add($OUT, $user, $schema, "community");
-	} else {
-		$user->sshkeys->delete_all;
-	}
-	$user->emails->delete_all;
+	my $txn = sub {
+		$user->update({ password => undef,
+				shell => '/bin/false',
+				enabled => 'false'});
+		my $active_groups = $user->groups->search(
+			{ name => { 'NOT IN' => [ 'everyone', 'collabora', 'multimedia' ] }});
+		if ($active_groups->count > 0) {
+			$user->remove_from_groups($user->groups->search(
+							  { name => { 'NOT IN' => [ 'everyone', 'collabora', 'multimedia' ] }}));
+		}
+		if ($user->groups->count > 0) {
+			$user->remove_from_groups($user->groups->search);
+		}
+		if (defined $community and $community) {
+			$user->sshkeys->update_all({ hostname => 'dhansak.collabora.co.uk' });
+			user_groups_add($OUT, $user, $schema, "community");
+		} else {
+			$user->sshkeys->delete_all;
+		}
+		#$user->emails->delete_all;
+        };
+	$schema->txn_do($txn);
+
 }
 
 sub user_groups_list {
