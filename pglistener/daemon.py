@@ -93,11 +93,18 @@ class Daemon:
             connection = self.connections[listener.dsn]
             cursor = connection.cursor()
             if hasattr(socket, 'SO_KEEPALIVE'):
-                fd = cursor.fileno()
-                s = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
-                # avoid unix sockets
-                if type(s.getsockname()) == type(()):
-                    s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                fd = None
+                try:
+                    fd = cursor.fileno()
+                except AttributeError:
+                    fd = cursor.connection.fileno()
+                except AttributeError:
+                    pass
+                else:
+                    s = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
+                    # avoid unix sockets
+                    if type(s.getsockname()) == type(()):
+                        s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
             try:
                 cursor.execute(listener.query)
