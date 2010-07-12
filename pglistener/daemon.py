@@ -209,7 +209,7 @@ class Daemon:
         for listener in self.listeners:
             if listener.dsn not in self.connections:
                 conn = self.make_connection(listener.dsn)
-                conn.set_isolation_level(0)
+                conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
                 self.connections[listener.dsn] = conn
 
         for listener in self.listeners:
