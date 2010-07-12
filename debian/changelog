@@ -1,3 +1,10 @@
+pglistener (0-10) unstable; urgency=low
+
+  * Get rid of postgresql from Required-Start and Required-Stop in the
+    init script.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 12 Jul 2010 15:33:37 +0200
+
 pglistener (0-9) lenny; urgency=low
 
   * Make this compatible with newer versions of psycopg2.
