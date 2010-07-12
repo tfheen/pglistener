@@ -1,3 +1,9 @@
+pglistener (0-9) lenny; urgency=low
+
+  * Make this compatible with newer versions of psycopg2.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 12 Jul 2010 15:21:13 +0200
+
 pglistener (0-8) lenny; urgency=low
 
   * Add user administration tool.
