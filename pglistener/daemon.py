@@ -118,22 +118,25 @@ class Daemon:
                 if sleeptime < 128:
                     sleeptime *= 2
 
-    def get_notifications(self, conn, cursor):
-        if not cursor.isready():
-            return []
-
+    def get_notifications(self, conn, cursor = None):
+        # Newer psycopg needs poll, but older doesn't have it.
+        try:
+            conn.poll()
+        except AttributeError:
+            conn.cursor().isready()
         notifications = [name for pid, name in conn.notifies]
         conn.notifies[:] = []
         return notifications
 
     def wait_for_notifications(self):
-        connections = {}
+        connections = self.connections.values()
 
-        for conn in self.connections.values():
-            connections[conn.cursor()] = conn
+        # Backwards compatibility
+        if not hasattr(connections[0], 'fileno'):
+            connections = [x.cursor() for x in connections]
 
         try:
-            readables, _, _ = select.select(connections.keys(), [], [], None)
+            readables, _, _ = select.select(connections, [], [], None)
         except select.error, (err, strerror):
             if err == errno.EINTR:
                 return []
@@ -142,10 +145,14 @@ class Daemon:
 
         notifications = set()
 
-        for cursor in readables:
+        for obj in readables:
+            conn = obj
+            if hasattr(obj, 'connection'):
+                # conn is a cursor, not a connection
+                conn = conn.connection
             try:
                 notifications.update(
-                    self.get_notifications(connections[cursor], cursor))
+                    self.get_notifications(conn))
             except psycopg2.DatabaseError, e:
                 # Probably end of file due to losing the connection.
                 # Reconnect.
