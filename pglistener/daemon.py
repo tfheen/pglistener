@@ -10,6 +10,7 @@ import time
 import socket
 
 import psycopg2
+import psycopg2.extensions
 
 def close_stdio():
     fh = file(os.devnull, 'r')
