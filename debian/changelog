@@ -1,4 +1,4 @@
-pglistener (0-11) unstable; urgency=low
+pglistener (0-11) lenny; urgency=low
 
   * Make sure to import psycopg2.extensions too, to make even newer
     versions of psycopg2 happy.
