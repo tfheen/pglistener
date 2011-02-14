@@ -81,7 +81,15 @@ sub create_new_user {
 
 sub find_and_set_user {
 	my ($OUT, $schema, $line) = (@_);
-	my @accounts = $schema->resultset('Account')->search(
+	my @accounts;
+
+	@accounts = $schema->resultset('Account')->search(
+		[ { username => $line } ]);
+	if (scalar @accounts == 1) {
+		return $accounts[0];
+	}
+
+	@accounts = $schema->resultset('Account')->search(
 		[ { name => { like => "%$line%" } },
 		  { username => { like => "%$line%" } } ]
 	);
