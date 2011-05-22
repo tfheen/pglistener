@@ -18,7 +18,7 @@
 
 from pglistener import PgListener
 
-import bsddb
+import bsddb, os
 
 class NssDb(PgListener):
   def do_write(self,result,target):
