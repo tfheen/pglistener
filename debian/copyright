@@ -1,0 +1,40 @@
+Downloaded from
+http://cgit.collabora.com/git/user/tfheen/pglistener.git/
+
+Initially packaged
+ by Dafydd Harries
+
+Now mainained by
+ Tollef Fog Heen <tfheen@debian.org>
+
+Copyright:
+
+  Copyright (C) 2005 Rob Bradford <rob@robster.org.uk>
+  Copyright (C) 2007-8 Robert McQueen <robert.mcqueen@bluelinux.co.uk>
+  Copyright (C) 2008 Collabora Ltd.
+
+Authors:
+
+  Rob Bradford <rob@robster.org.uk>
+  Robert McQueen <robert.mcqueen@bluelinux.co.uk>
+  Dafydd Harries <dafydd.harries@collabora.co.uk>
+  Tollef Fog Heen <tfheen@err.no>
+
+Licence:
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+please see /usr/share/common-licenses/GPL-2 for the full text of the
+GPL version 2.

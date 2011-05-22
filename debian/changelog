@@ -6,6 +6,7 @@ pglistener (1) unstable; urgency=low
   * Freedesktop.org uses slightly different db, fix pua for them.
   * Move libdbix-class-perl to suggests, it's just needed for pua.
   * Make myself the maintainer.
+  * Update debian/copyright to be useful.
 
  -- Tollef Fog Heen <tfheen@debian.org>  Mon, 25 Apr 2011 18:32:03 +0200
 
