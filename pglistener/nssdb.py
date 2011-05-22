@@ -23,7 +23,7 @@ import bsddb
 class NssDb(PgListener):
   def do_write(self,result,target):
     db_keys = self.options['db-keys']
-    db = bsddb.btopen(target,"n")
+    db = bsddb.btopen("%s.tmp" % (target, ), "n")
     index = 0
 
     for row in result:
@@ -37,3 +37,5 @@ class NssDb(PgListener):
       index += 1
 
     db.sync()
+    db.close()
+    os.rename("%s.tmp" % (target, ), target)
