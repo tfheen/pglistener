@@ -26,7 +26,7 @@ class FlatFile(PgListener):
 
   def do_format(self,row):
     if self.options.has_key('format'):
-      return self.options['format'].format(row)
+      return self.options['format'].decode("string-escape").format(*row)
     else:
       return self.options['delimiter'].join(row) +"\n"
 
