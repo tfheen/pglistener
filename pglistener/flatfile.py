@@ -25,6 +25,9 @@ class FlatFile(PgListener):
     PgListener.__init__(self,options)
 
   def do_format(self,row):
-    return self.options['delimiter'].join(row) +"\n"
+    if self.options.has_key('format'):
+      return self.options['format'].format(row)
+    else:
+      return self.options['delimiter'].join(row) +"\n"
 
 
