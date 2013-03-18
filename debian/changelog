@@ -1,3 +1,11 @@
+pglistener (2) unstable; urgency=low
+
+  * Add format support to flatfile
+  * Add gitolite handler
+  * pua updates to handle email field
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 18 Mar 2013 13:15:39 +0100
+
 pglistener (1) unstable; urgency=low
 
   * Switch versioning to just be an integer.
