@@ -29,7 +29,7 @@ class Gitolite(SshKeys):
         fnames = []
 
         for username, key_type, key_base64, comment in result:
-            fname = "{0}.{1}.pub".format(username,
+            fname = "{0}@{1}.pub".format(username,
                                          hashlib.md5(key_base64).hexdigest())
             fnames.append(fname)
             self.write_file(os.path.join(target, fname),
