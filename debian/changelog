@@ -1,3 +1,9 @@
+pglistener (3) unstable; urgency=low
+
+  * Use @ instead of . as pubkey separator for gitolite.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 18 Mar 2013 13:23:57 +0100
+
 pglistener (2) unstable; urgency=low
 
   * Add format support to flatfile
