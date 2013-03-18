@@ -290,11 +290,14 @@ while (1) {
 			when (/set gpg_key (.+)/) {
 				user_set_field($OUT, $currentuser, gpg_key => $1);
 			}
+			when (/set email (.+)/) {
+				user_set_field($OUT, $currentuser, email => $1);
+			}
 			when (/show(?: (.+))?/) {
 				if (defined $1) {
 					user_print_field($OUT, $currentuser, $1);
 				} else {
-					for my $f (qw(account_id username name shell password enabled gpg_key)) {
+					for my $f (qw(account_id username name shell password enabled gpg_key email)) {
 						user_print_field($OUT, $currentuser, $f);
 					}
 				}
