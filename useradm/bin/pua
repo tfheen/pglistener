@@ -65,7 +65,7 @@ sub get_prompt {
 
 sub create_new_user {
 	my ($OUT, $schema, $username, $group) = (@_);
-	$group ||= "collabora";
+#	$group ||= "collabora";
 	my $txn = sub {
 		my $user = $schema->resultset('Account')->create({ username => $username,
 								   name => 'Not set yet'
