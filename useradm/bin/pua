@@ -70,9 +70,11 @@ sub create_new_user {
 		my $user = $schema->resultset('Account')->create({ username => $username,
 								   name => 'Not set yet'
 								 });
-		my $g = $schema->resultset('Group')->search(
-			{ name => $group });
-		$user->add_to_groups($g->first);
+		if ($group) {
+			my $g = $schema->resultset('Group')->search(
+				{ name => $group });
+			$user->add_to_groups($g->first);
+		}
 		return $user;
 	};
 	my $user = $schema->txn_do($txn);
