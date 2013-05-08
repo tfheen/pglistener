@@ -62,6 +62,8 @@ class Daemon:
     def __init__(self, listeners):
         self.connections = {}
         self.listeners = listeners
+        self.sleeptime = 1
+        self.last_sleep = 0
 
     def err(self, message):
         syslog.syslog(syslog.LOG_ERR, message)
@@ -69,12 +71,20 @@ class Daemon:
     def info(self, message):
         syslog.syslog(syslog.LOG_INFO, message)
 
+    def sleep(self):
+        # Reset if stuff has been fine for five minutes
+        if time.time() > self.last_sleep + 300:
+            self.sleeptime = 1
+
+        time.sleep(sleeptime)
+        if sleeptime < 128:
+            sleeptime *= 2
+        self.last_sleep = time.time()
+
     def _make_connection(self, dsn):
         return psycopg2.connect(dsn)
 
     def make_connection(self, dsn):
-        sleeptime = 1
-
         while True:
             self.info("connecting to: %s" % format_dsn(dsn))
 
@@ -82,13 +92,9 @@ class Daemon:
                 return self._make_connection(dsn)
             except psycopg2.DatabaseError, e:
                 self.err("error: %s" % e)
-                time.sleep(sleeptime)
-
-                if sleeptime < 128:
-                    sleeptime *= 2
+                self.sleep()
 
     def query(self, listener):
-        sleeptime = 1
 
         while True:
             connection = self.connections[listener.dsn]
@@ -115,9 +121,7 @@ class Daemon:
                 self.err("reconnecting and retrying")
                 self.connections[listener.dsn] = \
                     self.make_connection(listener.dsn)
-
-                if sleeptime < 128:
-                    sleeptime *= 2
+                self.sleep()
 
     def get_notifications(self, conn, cursor = None):
         # Newer psycopg needs poll, but older doesn't have it.
@@ -163,6 +167,7 @@ class Daemon:
                 for dsn, c in self.connections.iteritems():
                     if c is conn:
                         self.connections[dsn] = self.make_connection(dsn)
+                self.sleep()
 
         return notifications
 
