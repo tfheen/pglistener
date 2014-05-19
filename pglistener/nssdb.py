@@ -25,7 +25,7 @@ class NssDb(PgListener):
   def do_write(self,result,target):
     tmp = "%s.tmp" % (target, )
     _db = db.DB()
-    _db.open(tmp, None, db.DB_BTREE, db.DB_CREATE|db.DB_TRUNCATE)
+    _db.open(tmp, None, db.DB_BTREE, db.DB_CREATE|db.DB_TRUNCATE, mode=0644)
     db_keys = self.options['db-keys']
 
     for index, row in enumerate(result):
