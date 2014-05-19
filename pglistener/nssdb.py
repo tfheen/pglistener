@@ -18,24 +18,23 @@
 
 from pglistener import PgListener
 
-import bsddb, os
+import bsddb.db as db
+import os
 
 class NssDb(PgListener):
   def do_write(self,result,target):
+    tmp = "%s.tmp" % (target, )
+    _db = db.DB()
+    _db.open(tmp, None, db.DB_BTREE, db.DB_CREATE|db.DB_TRUNCATE)
     db_keys = self.options['db-keys']
-    db = bsddb.btopen("%s.tmp" % (target, ), "n")
-    index = 0
 
-    for row in result:
+    for index, row in enumerate(result):
       entry = self.do_format(row) + '\0'
 
       for field in db_keys.keys():
-        db[db_keys[field] % row[field]] = entry
+        _db.put(db_keys[field] % row[field], entry)
+      _db.put("0%d" % index, entry)
 
-      db["0%d" % index] = entry
-
-      index += 1
-
-    db.sync()
-    db.close()
-    os.rename("%s.tmp" % (target, ), target)
+    _db.sync()
+    _db.close()
+    os.rename(tmp, target)
