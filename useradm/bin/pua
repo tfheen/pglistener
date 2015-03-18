@@ -39,6 +39,7 @@ When editing a user, the following commands are available:
     Setting and getting fields:
         set name $name
         set shell $shell
+        set password $md5sum
         set gpg_key $gpg_fingerprint
         show [$field]
         disable
@@ -166,7 +167,8 @@ sub user_print_field {
 sub user_revoke {
 	my ($OUT, $user, $schema, $community) = (@_);
 	my $txn = sub {
-		$user->update({ shell => '/bin/false',
+		$user->update({ password => undef,
+				shell => '/bin/false',
 				enabled => 'false'});
 		my $active_groups = $user->groups->search(
 			{ name => { 'NOT IN' => [ 'everyone', 'collabora', 'multimedia' ] }});
