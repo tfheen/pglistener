@@ -22,6 +22,7 @@ my $schema = Pglistener::Schema->connect("dbi:Pg:dbname=" . $config->{DBNAME} . 
 				   $config->{DBUSER}, $config->{DBPASS}, {pg_enable_utf8 => 1})
 	or die $DBI::errstr;
 my $currentuser = undef;
+my $default_groups = $config->{DEFAULT_GROUPS};
 
 sub help() {
 	q[
@@ -63,16 +64,18 @@ sub get_prompt {
 }
 
 sub create_new_user {
-	my ($OUT, $schema, $username, $group) = (@_);
-#	$group ||= "collabora";
+	my ($OUT, $schema, $username, $groups) = (@_);
+	$groups ||= $default_groups;
 	my $txn = sub {
 		my $user = $schema->resultset('Account')->create({ username => $username,
 								   name => 'Not set yet'
 								 });
-		if ($group) {
-			my $g = $schema->resultset('Group')->search(
-				{ name => $group });
-			$user->add_to_groups($g->first);
+		if ($groups) {
+			for my $group (split /\s+/, $groups) {
+				my $g = $schema->resultset('Group')->search(
+					{ name => $group });
+				$user->add_to_groups($g->first);
+			}
 		}
 		return $user;
 	};
