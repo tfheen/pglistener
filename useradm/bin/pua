@@ -24,6 +24,17 @@ my $schema = Pglistener::Schema->connect("dbi:Pg:dbname=" . $config->{DBNAME} . 
 my $currentuser = undef;
 my $default_groups = $config->{DEFAULT_GROUPS};
 
+my @extra_fields_account = ();
+if ($config->{EXTRA_FIELDS_ACCOUNT}) {
+	@extra_fields_account = split /\s+/, $config->{EXTRA_FIELDS_ACCOUNT};
+	my $rs = $schema->resultset('Account');
+	$rs->result_source->add_columns(@extra_fields_account);
+	Pglistener::Schema::Result::Account->add_columns(@extra_fields_account);
+	for my $col (@extra_fields_account) {
+		Pglistener::Schema::Result::Account->register_column($col);
+	}
+}
+
 sub help() {
 	q[
 Create new user:
@@ -268,6 +279,8 @@ while (1) {
 			undef $currentuser;
 			next;
 		}
+		my $extra_set_group = join "|", @extra_fields_account;
+		my $extra_set = qr/set ($extra_set_group) (.+)/;
 		given ($line) {
 			when (/^(?:cd\s*)?\.\./) {
 				undef $currentuser;
@@ -287,20 +300,17 @@ while (1) {
 			when (/set shell (\S+)/) {
 				user_set_field($OUT, $currentuser, shell => $1);
 			}
-			when (/set password (\S+)/) {
-				user_set_field($OUT, $currentuser, password => $1);
+			when ($extra_set) {
+				user_set_field($OUT, $currentuser, $1 => $2);
 			}
 			when (/set gpg_key (.+)/) {
 				user_set_field($OUT, $currentuser, gpg_key => $1);
-			}
-			when (/set email (.+)/) {
-				user_set_field($OUT, $currentuser, email => $1);
 			}
 			when (/show(?: (.+))?/) {
 				if (defined $1) {
 					user_print_field($OUT, $currentuser, $1);
 				} else {
-					for my $f (qw(account_id username name shell password enabled gpg_key email)) {
+					for my $f (qw(account_id username name shell enabled gpg_key), @extra_fields_account) {
 						user_print_field($OUT, $currentuser, $f);
 					}
 				}
