@@ -1,6 +1,7 @@
 pglistener (4) UNRELEASED; urgency=medium
 
   * Add missing ${misc:Depends} to Depends.
+  * Add lintian overrides
 
  -- Tollef Fog Heen <tfheen@debian.org>  Wed, 18 Mar 2015 14:57:02 +0100
 

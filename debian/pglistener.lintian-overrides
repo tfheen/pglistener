@@ -1,0 +1,2 @@
+E: pglistener: init.d-script-missing-dependency-on-remote_fs etc/init.d/pglistener: required-start
+E: pglistener: init.d-script-missing-dependency-on-remote_fs etc/init.d/pglistener: required-stop
