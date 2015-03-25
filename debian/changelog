@@ -1,8 +1,8 @@
 pglistener (4) UNRELEASED; urgency=medium
 
   * Add missing ${misc:Depends} to Depends.
-  * Add lintian overrides
-  * Switch build system to dh, use setup.py
+  * Add lintian overrides.
+  * Switch build system to dh, use setup.py.
 
  -- Tollef Fog Heen <tfheen@debian.org>  Wed, 18 Mar 2015 14:57:02 +0100
 
