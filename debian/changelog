@@ -1,3 +1,9 @@
+pglistener (4) UNRELEASED; urgency=medium
+
+  * Add missing ${misc:Depends} to Depends.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Wed, 18 Mar 2015 14:57:02 +0100
+
 pglistener (3) unstable; urgency=low
 
   * Use @ instead of . as pubkey separator for gitolite.

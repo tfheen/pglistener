@@ -5,7 +5,7 @@ Build-Depends: debhelper (>= 5)
 Maintainer: Tollef Fog Heen <tfheen@debian.org>
 
 Package: pglistener
-Depends: python-psycopg2, lsb-base (>= 3.0-6), adduser
+Depends: python-psycopg2, lsb-base (>= 3.0-6), adduser, ${misc:Depends}
 Suggests: libdbix-class-perl
 Architecture: all
 Description: Postgres listener
