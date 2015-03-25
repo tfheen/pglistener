@@ -1,4 +1,4 @@
-pglistener (4) UNRELEASED; urgency=medium
+pglistener (4) unstable; urgency=medium
 
   * Add missing ${misc:Depends} to Depends.
   * Add lintian overrides.
