@@ -8,6 +8,7 @@ Standards-Version: 3.9.6
 
 Package: pglistener
 Depends: python, python-psycopg2, lsb-base (>= 3.0-6), adduser, ${misc:Depends}
+Recommends: libnss-db
 Suggests: libdbix-class-perl
 Architecture: all
 Description: Postgres listener
