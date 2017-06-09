@@ -76,9 +76,9 @@ class Daemon:
         if time.time() > self.last_sleep + 300:
             self.sleeptime = 1
 
-        time.sleep(sleeptime)
-        if sleeptime < 128:
-            sleeptime *= 2
+        time.sleep(self.sleeptime)
+        if self.sleeptime < 128:
+            self.sleeptime *= 2
         self.last_sleep = time.time()
 
     def _make_connection(self, dsn):
