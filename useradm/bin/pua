@@ -15,6 +15,8 @@ use utf8;
 use Pglistener::Schema;
 use Data::Dumper;
 
+use experimental 'smartmatch';
+
 binmode STDOUT, ":utf8";
 
 my $config = Config::File::read_config_file("/etc/pua.conf");
